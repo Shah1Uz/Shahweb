@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ExternalLink, Github, ArrowRight, FolderGit2 } from 'lucide-react';
+import { Search, ExternalLink, Github, ArrowRight, FolderGit2, X } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Project } from '../../types';
 import { Badge } from '../../components/ui/Badge';
@@ -26,15 +26,15 @@ export const Projects: React.FC = () => {
       .finally(() => setLoading(false));
   }, [category, search]);
 
-  const categories = ['ALL', 'Cloud Systems', 'Artificial Intelligence', 'FinTech', 'Web Application'];
+  const categories = ['ALL', 'Open Source', 'Commercial', 'Infrastructure', 'Mobile & AI'];
 
   return (
     <div className="pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
       {/* Header */}
       <div className="space-y-4 max-w-3xl">
-        <span className="text-xs font-mono uppercase tracking-widest text-[#d6f779]">Engineering Work</span>
+        <span className="text-xs font-mono uppercase tracking-widest text-[#d6f779]">Portfolio</span>
         <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight">
-          Featured Projects & Architectures
+          Crafted Engineering Works
         </h1>
         <p className="text-base sm:text-lg text-[#9d9f9e] leading-relaxed">
           Production software systems, distributed telemetry platforms, and high-performance WebGL applications.
@@ -42,9 +42,9 @@ export const Projects: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 pb-6 border-b border-[#343636]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-6 border-b border-[#343636]">
         {/* Category Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto pb-2 sm:pb-0 scroll-smooth">
           {categories.map((cat) => (
             <button
               key={cat}
@@ -61,15 +61,24 @@ export const Projects: React.FC = () => {
         </div>
 
         {/* Search Input */}
-        <div className="relative w-full md:w-72">
+        <div className="relative w-full sm:w-72 shrink-0">
           <Search className="w-4 h-4 text-[#9d9f9e] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search projects..."
-            className="w-full bg-[#191a1a] border border-[#343636] rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-[#9d9f9e] focus:outline-none focus:border-[#d6f779] transition-colors"
+            className="w-full bg-[#191a1a] border border-[#343636] rounded-xl pl-10 pr-9 py-2 text-xs text-white placeholder-[#9d9f9e] focus:outline-none focus:border-[#d6f779] transition-colors"
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1 rounded-md transition-colors"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 

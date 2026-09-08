@@ -70,6 +70,14 @@ export const AdminLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#101111] text-[#EEEEEE] flex overflow-hidden">
+      {/* Mobile sidebar backdrop overlay */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 bg-[#151616]/95 border-r border-[#343636] flex flex-col justify-between transition-all duration-300 backdrop-blur-xl ${

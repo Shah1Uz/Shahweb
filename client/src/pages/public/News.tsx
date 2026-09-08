@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, ArrowRight, Sparkles, Newspaper } from 'lucide-react';
+import { Calendar, ArrowRight, Sparkles, Newspaper, Search, X } from 'lucide-react';
 import { api } from '../../lib/api';
 import { News as NewsType } from '../../types';
 import { CountdownCard } from '../../components/public/CountdownCard';
@@ -9,12 +9,14 @@ import { Badge } from '../../components/ui/Badge';
 export const News: React.FC = () => {
   const [newsList, setNewsList] = useState<NewsType[]>([]);
   const [category, setCategory] = useState('ALL');
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
   const fetchNews = () => {
     setLoading(true);
     let url = `/news?includeScheduled=true&`;
     if (category !== 'ALL') url += `category=${encodeURIComponent(category)}&`;
+    if (search.trim()) url += `search=${encodeURIComponent(search.trim())}&`;
 
     api
       .get(url)
@@ -27,7 +29,7 @@ export const News: React.FC = () => {
 
   useEffect(() => {
     fetchNews();
-  }, [category]);
+  }, [category, search]);
 
   const scheduledItems = newsList.filter((n) => n.status === 'SCHEDULED');
   const publishedItems = newsList.filter((n) => n.status === 'PUBLISHED');
@@ -47,21 +49,45 @@ export const News: React.FC = () => {
         </p>
       </div>
 
-      {/* Category Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#343636]">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setCategory(cat)}
-            className={`px-4 py-2 rounded-xl text-xs font-mono transition-all shrink-0 ${
-              category === cat
-                ? 'bg-[#d6f779]/15 text-[#d6f779] border border-[#d6f779]/35 font-semibold'
-                : 'bg-[#191a1a] text-[#9d9f9e] hover:text-white border border-[#343636]'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-6 border-b border-[#343636]">
+        {/* Category Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full sm:w-auto pb-2 sm:pb-0 scroll-smooth">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`px-4 py-2 rounded-xl text-xs font-mono transition-all shrink-0 ${
+                category === cat
+                  ? 'bg-[#d6f779]/15 text-[#d6f779] border border-[#d6f779]/35 font-semibold'
+                  : 'bg-[#191a1a] text-[#9d9f9e] hover:text-white border border-[#343636]'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Input */}
+        <div className="relative w-full sm:w-72 shrink-0">
+          <Search className="w-4 h-4 text-[#9d9f9e] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search announcements..."
+            className="w-full bg-[#191a1a] border border-[#343636] rounded-xl pl-10 pr-9 py-2 text-xs text-white placeholder-[#9d9f9e] focus:outline-none focus:border-[#d6f779] transition-colors"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1 rounded-md transition-colors"
+              title="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* SCHEDULED "COMING SOON" COUNTDOWN SECTION */}
