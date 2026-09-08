@@ -64,6 +64,25 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), env: config.nodeEnv });
 });
 
+// Root endpoint for API status
+app.get('/', (_req, res, next) => {
+  if (clientDistPath) {
+    return next();
+  }
+  res.json({
+    status: 'online',
+    service: 'Shahzod Portfolio Backend API',
+    message: '⚡ Backend server is running successfully on Render!',
+    healthCheck: '/api/health',
+    endpoints: {
+      profile: '/api/content/profile',
+      audio: '/api/audio',
+      projects: '/api/projects',
+    },
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Serve frontend in production if client/dist exists
 const clientDistCandidates = [
   path.resolve(__dirname, '../../client/dist'),
