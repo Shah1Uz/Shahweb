@@ -1,8 +1,11 @@
 {
   "name": "portfolio-cms-monorepo",
   "version": "1.0.0",
-  "private": true,
+  "workspaces": [
+    "server"
+  ],
   "scripts": {
+    "postinstall": "npm --prefix server install && npm --prefix server run build",
     "build": "npm --prefix server install && npm --prefix server run build && npx --prefix server prisma db push",
     "start": "npm --prefix server start",
     "dev": "npm --prefix server start"
