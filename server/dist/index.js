@@ -93,15 +93,26 @@ app.use((err, _req, res, _next) => {
         error: err.message || 'Internal server error',
     });
 });
+process.on('uncaughtException', (err) => {
+    console.error('FATAL UNCAUGHT EXCEPTION:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('FATAL UNHANDLED REJECTION at:', promise, 'reason:', reason);
+});
 const PORT = config_1.config.port;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`====================================================`);
-    console.log(`⚡ Full-Stack Portfolio CMS API running on port ${PORT}`);
+    console.log(`⚡ Full-Stack Portfolio CMS API running on port ${PORT} (0.0.0.0)`);
     console.log(`⚡ Environment: ${config_1.config.nodeEnv}`);
     console.log(`⚡ Admin Email: ${config_1.config.adminEmail}`);
     console.log(`⚡ Static Uploads: ${config_1.config.uploadDir}`);
     console.log(`====================================================`);
-    // Start background content scheduler
-    (0, schedulerService_1.startScheduler)();
+    // Start background content scheduler safely
+    try {
+        (0, schedulerService_1.startScheduler)();
+    }
+    catch (err) {
+        console.warn('[SCHEDULER] Could not start background scheduler:', err);
+    }
 });
 exports.default = app;
