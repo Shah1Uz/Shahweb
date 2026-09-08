@@ -217,6 +217,7 @@ model Media {
   size         Int
   url          String
   path         String
+  data         String?  // Base64 encoded file content stored directly in database for permanent cloud persistence
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

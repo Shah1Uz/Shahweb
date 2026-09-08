@@ -45,6 +45,49 @@ app.use(express_1.default.urlencoded({ extended: true, limit: '50mb' }));
 app.use((0, morgan_1.default)('dev'));
 // Static uploads serving
 app.use('/uploads', express_1.default.static(config_1.config.uploadDir));
+// Fallback: If physical file was wiped on ephemeral cloud/Render restart, stream directly from DB
+app.get('/uploads/:filename', async (req, res, next) => {
+    try {
+        const filename = req.params.filename;
+        const media = await config_1.prisma.media.findFirst({
+            where: { fileName: filename },
+        });
+        if (!media || !media.data) {
+            return res.status(404).send('File not found');
+        }
+        const buffer = Buffer.from(media.data, 'base64');
+        // Restore to disk cache so subsequent requests are served instantly by express.static
+        try {
+            if (!fs_1.default.existsSync(config_1.config.uploadDir)) {
+                fs_1.default.mkdirSync(config_1.config.uploadDir, { recursive: true });
+            }
+            fs_1.default.writeFileSync(path_1.default.join(config_1.config.uploadDir, filename), buffer);
+        }
+        catch { }
+        const totalSize = buffer.length;
+        const range = req.headers.range;
+        res.setHeader('Content-Type', media.mimeType || 'application/octet-stream');
+        res.setHeader('Accept-Ranges', 'bytes');
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        if (range) {
+            const parts = range.replace(/bytes=/, '').split('-');
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+            const chunkSize = end - start + 1;
+            res.status(206);
+            res.setHeader('Content-Range', `bytes ${start}-${end}/${totalSize}`);
+            res.setHeader('Content-Length', chunkSize);
+            res.end(buffer.slice(start, end + 1));
+        }
+        else {
+            res.setHeader('Content-Length', totalSize);
+            res.end(buffer);
+        }
+    }
+    catch (err) {
+        next(err);
+    }
+});
 // Sitemap route
 app.get('/sitemap.xml', sitemapController_1.getSitemap);
 // API Routes

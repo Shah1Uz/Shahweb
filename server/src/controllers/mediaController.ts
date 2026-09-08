@@ -19,6 +19,15 @@ export const uploadMedia = async (req: AuthRequest, res: Response): Promise<void
     const savedMedia = [];
 
     for (const file of files) {
+      let base64Data: string | null = null;
+      try {
+        if (file.path && fs.existsSync(file.path)) {
+          base64Data = fs.readFileSync(file.path).toString('base64');
+        }
+      } catch (err) {
+        console.warn('Could not read file for DB backup:', err);
+      }
+
       const fileUrl = `${baseUrl}/${file.filename}`;
       const media = await prisma.media.create({
         data: {
@@ -28,10 +37,13 @@ export const uploadMedia = async (req: AuthRequest, res: Response): Promise<void
           size: file.size,
           url: fileUrl,
           path: file.path,
+          data: base64Data,
         },
       });
 
-      savedMedia.push(media);
+      // Omit bulky base64 data from response
+      const { data: _, ...mediaMeta } = media as any;
+      savedMedia.push(mediaMeta);
     }
 
     await prisma.activityLog.create({
@@ -76,6 +88,17 @@ export const getMediaList = async (req: Request, res: Response): Promise<void> =
     const [media, total] = await Promise.all([
       prisma.media.findMany({
         where,
+        select: {
+          id: true,
+          fileName: true,
+          originalName: true,
+          mimeType: true,
+          size: true,
+          url: true,
+          path: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         orderBy: { createdAt: 'desc' },
         take,
         skip,
@@ -97,6 +120,75 @@ export const getMediaList = async (req: Request, res: Response): Promise<void> =
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to fetch media' });
+  }
+};
+
+export const serveMediaFile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { identifier } = req.params;
+    const media = await prisma.media.findFirst({
+      where: {
+        OR: [
+          { id: identifier },
+          { fileName: identifier },
+        ],
+      },
+    });
+
+    if (!media) {
+      res.status(404).send('Media not found');
+      return;
+    }
+
+    // If file physically exists on disk, stream it
+    if (media.path && fs.existsSync(media.path)) {
+      res.setHeader('Content-Type', media.mimeType || 'application/octet-stream');
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      fs.createReadStream(media.path).pipe(res);
+      return;
+    }
+
+    // If file was wiped on ephemeral container restart, restore from DB
+    if (!media.data) {
+      res.status(404).send('Media content not found in database');
+      return;
+    }
+
+    const buffer = Buffer.from(media.data, 'base64');
+
+    // Restore to disk cache
+    try {
+      if (media.path) {
+        const dir = path.dirname(media.path);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(media.path, buffer);
+      }
+    } catch {}
+
+    const totalSize = buffer.length;
+    const range = req.headers.range;
+
+    res.setHeader('Content-Type', media.mimeType || 'application/octet-stream');
+    res.setHeader('Accept-Ranges', 'bytes');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : totalSize - 1;
+      const chunkSize = end - start + 1;
+
+      res.status(206);
+      res.setHeader('Content-Range', `bytes ${start}-${end}/${totalSize}`);
+      res.setHeader('Content-Length', chunkSize);
+      res.end(buffer.slice(start, end + 1));
+    } else {
+      res.setHeader('Content-Length', totalSize);
+      res.end(buffer);
+    }
+  } catch (error: any) {
+    res.status(500).send('Error serving media file');
   }
 };
 

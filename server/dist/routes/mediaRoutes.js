@@ -6,6 +6,7 @@ const authMiddleware_1 = require("../middleware/authMiddleware");
 const uploadMiddleware_1 = require("../middleware/uploadMiddleware");
 const router = (0, express_1.Router)();
 router.get('/', mediaController_1.getMediaList);
+router.get('/file/:identifier', mediaController_1.serveMediaFile);
 router.post('/upload', authMiddleware_1.authenticate, authMiddleware_1.requireAdmin, uploadMiddleware_1.upload.array('files', 20), mediaController_1.uploadMedia);
 router.delete('/:id', authMiddleware_1.authenticate, authMiddleware_1.requireAdmin, mediaController_1.deleteMedia);
 router.patch('/:id/rename', authMiddleware_1.authenticate, authMiddleware_1.requireAdmin, mediaController_1.renameMedia);
