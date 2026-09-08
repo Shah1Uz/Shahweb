@@ -114,20 +114,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         scrolled
-          ? 'bg-[#101111]/90 backdrop-blur-xl border-b border-[#343636] py-2.5 sm:py-3 shadow-2xl'
-          : 'bg-transparent py-3 sm:py-5'
+          ? 'bg-[#101111]/95 backdrop-blur-xl border-b border-[#343636] py-2 sm:py-2.5 shadow-2xl'
+          : 'bg-[#101111]/80 md:bg-[#101111]/40 backdrop-blur-md py-2.5 sm:py-3.5'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-1.5 sm:gap-3">
         {/* Logo */}
         <Link
           to="/"
           onClick={handleLogoClick}
-          className="flex items-center gap-2 sm:gap-2.5 group shrink-0 select-none cursor-pointer"
+          className="flex items-center gap-2 group shrink-0 select-none cursor-pointer"
           title="SHAHZOD.DEV"
         >
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#d6f779] flex items-center justify-center shadow-lg shadow-[#d6f779]/25 group-hover:scale-105 transition-transform shrink-0">
-            <Terminal className="w-4 h-4 sm:w-5 sm:h-5 text-[#101111] font-extrabold" />
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#d6f779] flex items-center justify-center shadow-lg shadow-[#d6f779]/25 group-hover:scale-105 transition-transform shrink-0">
+            <Terminal className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#101111] font-extrabold" />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="font-mono font-bold text-sm sm:text-base lg:text-lg tracking-wider text-white flex items-center gap-0.5">
@@ -139,15 +139,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
           </div>
         </Link>
 
-        {/* Desktop Navigation (visible on lg and xl screens, fitted seamlessly) */}
-        <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 bg-[#191a1a]/90 border border-[#343636] rounded-full px-2 xl:px-4 py-1 xl:py-1.5 backdrop-blur-md shrink-0">
+        {/* Desktop Navigation (visible on md, lg, xl screens) */}
+        <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 bg-[#191a1a]/90 border border-[#343636] rounded-full px-1.5 lg:px-3 py-1 backdrop-blur-md shrink-0">
           {navItems.map((item) => {
             const isActive = location.pathname === item.url;
             return (
               <Link
                 key={item.id}
                 to={item.url}
-                className={`relative px-2.5 xl:px-4 py-1 xl:py-1.5 text-xs xl:text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap ${
+                className={`relative px-2 lg:px-3.5 xl:px-4 py-1 text-xs lg:text-sm font-medium rounded-full transition-all duration-200 whitespace-nowrap ${
                   isActive
                     ? 'text-[#d6f779] font-semibold'
                     : 'text-[#9d9f9e] hover:text-white hover:bg-white/5'
@@ -167,15 +167,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
         </nav>
 
         {/* Desktop Right Action Icons */}
-        <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
+        <div className="hidden md:flex items-center gap-1.5 lg:gap-2.5 shrink-0">
           {/* Global Search Button */}
           <button
             onClick={onOpenSearch}
-            className="flex items-center gap-2 px-2.5 xl:px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-xs font-mono transition-all shrink-0 cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-xs font-mono transition-all shrink-0 cursor-pointer"
             title="Search (Ctrl + K / ⌘K)"
           >
             <Search className="w-3.5 h-3.5 text-[#d6f779]" />
-            <span>Search</span>
+            <span className="hidden xl:inline">Search</span>
             <kbd className="bg-white/10 px-1.5 py-0.5 rounded text-[10px] text-gray-300 font-mono">⌘K</kbd>
           </button>
 
@@ -205,26 +205,26 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
           {user && (
             <Link
               to="/admin/dashboard"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#d6f779]/15 border border-[#d6f779]/35 text-[#d6f779] hover:bg-[#d6f779]/25 text-xs font-semibold transition-all shrink-0"
+              className="flex items-center gap-1.5 px-2.5 lg:px-3 py-1.5 rounded-full bg-[#d6f779]/15 border border-[#d6f779]/35 text-[#d6f779] hover:bg-[#d6f779]/25 text-xs font-semibold transition-all shrink-0"
             >
               <LayoutDashboard className="w-3.5 h-3.5" />
-              <span className="hidden xl:inline">Admin Panel</span>
+              <span className="hidden xl:inline">Admin</span>
             </Link>
           )}
         </div>
 
-        {/* Mobile & Tablet Action Bar (< lg) */}
-        <div className="flex lg:hidden items-center gap-1 sm:gap-2">
-          {/* Quick Search Button on mobile/tablet */}
+        {/* Mobile Action Bar (< md) */}
+        <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
+          {/* Quick Search Button on mobile */}
           <button
             onClick={onOpenSearch}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-[#343636] text-gray-200 hover:text-white active:scale-95 transition-all text-xs font-mono"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-[#343636] text-gray-200 hover:text-white active:scale-95 transition-all text-xs font-mono"
             aria-label="Search"
             title="Search"
           >
             <Search className="w-4 h-4 text-[#d6f779]" />
-            <span className="hidden sm:inline text-xs text-gray-300">Search</span>
-            <kbd className="hidden sm:inline bg-white/10 px-1 py-0.2 text-[9px] rounded text-gray-400">⌘K</kbd>
+            <span className="text-xs text-gray-300">Search</span>
+            <kbd className="hidden xs:inline bg-white/10 px-1 py-0.2 text-[9px] rounded text-gray-400">⌘K</kbd>
           </button>
 
           {/* Hamburger Menu Button */}
@@ -238,7 +238,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
         </div>
       </div>
 
-      {/* Mobile / Tablet Drawer Menu */}
+      {/* Mobile Drawer Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -248,7 +248,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="lg:hidden fixed inset-0 top-[57px] sm:top-[65px] bg-black/60 backdrop-blur-sm z-30"
+              className="md:hidden fixed inset-0 top-[52px] sm:top-[60px] bg-black/60 backdrop-blur-sm z-30"
             />
 
             {/* Slide-down drawer */}
@@ -257,7 +257,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
-              className="lg:hidden relative z-40 bg-[#141515] border-b border-[#343636] backdrop-blur-2xl px-4 py-5 max-h-[calc(100dvh-64px)] overflow-y-auto space-y-4 shadow-2xl"
+              className="md:hidden relative z-40 bg-[#141515] border-b border-[#343636] backdrop-blur-2xl px-4 py-5 max-h-[calc(100dvh-60px)] overflow-y-auto space-y-4 shadow-2xl"
             >
               {/* Quick Search Button in Drawer */}
               <button

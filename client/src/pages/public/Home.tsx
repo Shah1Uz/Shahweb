@@ -91,11 +91,11 @@ export const Home: React.FC = () => {
   const publishedTestimonials = testimonials.filter((t) => t.published !== false);
 
   return (
-    <div className="space-y-20 sm:space-y-28 pt-24 sm:pt-28 pb-20">
+    <div className="space-y-20 sm:space-y-28 pt-24 sm:pt-28 pb-20 overflow-x-clip w-full max-w-full">
       {/* HERO SECTION */}
-      <section className="relative px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="relative px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
         {/* Subtle eyramusic lime ambient glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-[#d6f779]/[0.05] rounded-full blur-[160px] pointer-events-none -z-10" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] max-w-full h-[350px] bg-[#d6f779]/[0.05] rounded-full blur-[160px] pointer-events-none -z-10" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Hero Details */}
@@ -103,7 +103,7 @@ export const Home: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="lg:col-span-7 space-y-5 sm:space-y-6"
+            className="lg:col-span-7 space-y-5 sm:space-y-6 min-w-0"
           >
             {/* Status Pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#191a1a] border border-[#343636] text-[#d6f779] text-[10px] sm:text-xs font-mono max-w-full">
@@ -161,8 +161,8 @@ export const Home: React.FC = () => {
             </div>
 
             {/* Quick Terminal Code Snippet */}
-            <div className="pt-4 sm:pt-6">
-              <div className="p-3.5 sm:p-4 rounded-xl bg-[#191a1a] border border-[#343636] font-mono text-xs text-gray-300 max-w-lg backdrop-blur-md overflow-x-auto">
+            <div className="pt-4 sm:pt-6 w-full max-w-full min-w-0">
+              <div className="p-3.5 sm:p-4 rounded-xl bg-[#191a1a] border border-[#343636] font-mono text-xs text-gray-300 max-w-lg backdrop-blur-md overflow-x-auto w-full">
                 <div className="flex items-center gap-2 pb-2 mb-2 border-b border-[#343636] text-gray-500">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#343636]" />
                   <span className="w-2.5 h-2.5 rounded-full bg-[#4a504a]" />
@@ -170,7 +170,7 @@ export const Home: React.FC = () => {
                   <span className="ml-2 text-[10px] text-[#9d9f9e]">shahzod@edge-node-01:~</span>
                 </div>
                 <div className="space-y-1 text-[11px]">
-                  <p className="text-[#9d9f9e]">
+                  <p className="text-[#9d9f9e] truncate">
                     <span className="text-[#d6f779] font-bold">$</span> const engineer = await hire(&#123; role: 'Architect', level: 'Senior' &#125;);
                   </p>
                   <p className="text-white font-medium">
@@ -186,7 +186,7 @@ export const Home: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="lg:col-span-5 relative"
+            className="lg:col-span-5 relative min-w-0"
           >
             <div className="relative mx-auto max-w-md rounded-3xl overflow-hidden glass-panel border border-[#343636] p-3 shadow-2xl bg-[#191a1a]">
               <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[#101111]">
