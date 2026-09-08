@@ -11,6 +11,7 @@ import { Blog } from './pages/public/Blog';
 import { BlogDetail } from './pages/public/BlogDetail';
 import { Services } from './pages/public/Services';
 import { Contact } from './pages/public/Contact';
+import { BookMeetingPage } from './pages/public/BookMeetingPage';
 
 // Admin
 import { Login } from './pages/admin/Login';
@@ -46,6 +47,8 @@ export const App: React.FC = () => {
           <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/services" element={<Services />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/book" element={<BookMeetingPage />} />
+          <Route path="/meeting" element={<BookMeetingPage />} />
         </Route>
 
         {/* Admin Login */}

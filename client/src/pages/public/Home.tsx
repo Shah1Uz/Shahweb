@@ -21,9 +21,11 @@ import { Project, News, BlogPost, Service, Skill, Testimonial } from '../../type
 import { CountdownCard } from '../../components/public/CountdownCard';
 import { Badge } from '../../components/ui/Badge';
 import { useProfile } from '../../context/ProfileContext';
+import { CalBookingModal } from '../../components/public/CalBookingModal';
 
 export const Home: React.FC = () => {
   const { profile } = useProfile();
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [news, setNews] = useState<News[]>([]);
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -139,9 +141,18 @@ export const Home: React.FC = () => {
                 <ArrowRight className="w-4 h-4" />
               </Link>
 
+              <button
+                type="button"
+                onClick={() => setBookingModalOpen(true)}
+                className="w-full sm:w-auto justify-center px-5 py-3 sm:py-3.5 rounded-xl bg-[#191a1a] hover:bg-[#242626] text-[#d6f779] hover:text-white font-bold text-sm border border-[#d6f779]/35 hover:border-[#d6f779] transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-[#d6f779]/10"
+              >
+                <Calendar className="w-4 h-4 text-[#d6f779]" />
+                <span>Book 30-Min Call</span>
+              </button>
+
               <Link
                 to="/contact"
-                className="w-full sm:w-auto justify-center px-6 py-3 sm:py-3.5 rounded-xl glass-panel bg-[#191a1a] hover:bg-[#242626] text-[#eee] font-semibold text-sm border border-[#343636] hover:border-[#d6f779]/40 transition-all flex items-center gap-2"
+                className="w-full sm:w-auto justify-center px-5 py-3 sm:py-3.5 rounded-xl glass-panel bg-[#191a1a] hover:bg-[#242626] text-[#eee] font-semibold text-sm border border-[#343636] hover:border-[#d6f779]/40 transition-all flex items-center gap-2"
               >
                 <span>{profile?.ctaContactText || 'Contact Me'}</span>
               </Link>
@@ -539,17 +550,31 @@ export const Home: React.FC = () => {
           <p className="text-base text-[#9d9f9e] max-w-xl mx-auto leading-relaxed">
             Let’s engineer something exceptional. Reach out to discuss architectural requirements, cloud deployment, or contracting availability.
           </p>
-          <div className="pt-2">
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-[#d6f779] hover:bg-[#c3e665] text-[#101111] font-extrabold text-sm shadow-2xl shadow-[#d6f779]/20 hover:scale-105 transition-transform"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#d6f779] hover:bg-[#c3e665] text-[#101111] font-extrabold text-sm shadow-2xl shadow-[#d6f779]/20 hover:scale-105 transition-transform"
             >
               <span>Get in Touch</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
+            <button
+              type="button"
+              onClick={() => setBookingModalOpen(true)}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-[#191a1a] hover:bg-[#242626] text-white font-bold text-sm border border-[#343636] hover:border-[#d6f779]/45 transition-all cursor-pointer shadow-lg"
+            >
+              <Calendar className="w-4 h-4 text-[#d6f779]" />
+              <span>Schedule 30-Min Call</span>
+            </button>
           </div>
         </div>
       </section>
+
+      {/* Cal.com Booking Modal */}
+      <CalBookingModal
+        isOpen={bookingModalOpen}
+        onClose={() => setBookingModalOpen(false)}
+      />
     </div>
   );
 };

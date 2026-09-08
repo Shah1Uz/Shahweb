@@ -10,6 +10,7 @@ import {
   Terminal,
   LayoutDashboard,
   ChevronRight,
+  Calendar,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -201,6 +202,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
             </button>
           </div>
 
+          {/* Quick Book Call Button */}
+          <Link
+            to="/book"
+            className="flex items-center gap-1.5 px-2.5 lg:px-3 py-1.5 rounded-full bg-[#d6f779]/15 hover:bg-[#d6f779]/25 border border-[#d6f779]/35 text-[#d6f779] text-xs font-semibold font-mono transition-all shrink-0 cursor-pointer shadow-sm hover:scale-105 active:scale-95"
+            title="Schedule a 30-Min Call"
+          >
+            <Calendar className="w-3.5 h-3.5 text-[#d6f779]" />
+            <span className="hidden xl:inline">Book a Call</span>
+          </Link>
+
           {/* Admin Panel Link */}
           {user && (
             <Link
@@ -277,6 +288,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
                   ⌘K
                 </kbd>
               </button>
+
+              {/* Quick Book Call in Mobile Drawer */}
+              <Link
+                to="/book"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-between px-3.5 py-3 rounded-xl bg-[#d6f779]/15 border border-[#d6f779]/35 text-[#d6f779] hover:bg-[#d6f779]/25 transition-all text-left"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Calendar className="w-4 h-4 text-[#d6f779] shrink-0" />
+                  <span className="text-xs sm:text-sm font-bold font-mono">
+                    Schedule 30-Min Call
+                  </span>
+                </div>
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#d6f779]/20 font-bold">
+                  LIVE
+                </span>
+              </Link>
 
               {/* Nav Items Links */}
               <div className="flex flex-col gap-1">

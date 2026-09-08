@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Mail, MapPin, CheckCircle2, AlertCircle, MessageSquare } from 'lucide-react';
+import { Send, Mail, MapPin, CheckCircle2, AlertCircle, MessageSquare, Calendar, Clock, Video } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useToast } from '../../components/ui/Toast';
+import { CalEmbed } from '../../components/public/CalEmbed';
 
 export const Contact: React.FC = () => {
+  const [mode, setMode] = useState<'message' | 'calendar'>('message');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -61,13 +63,66 @@ export const Contact: React.FC = () => {
           Let’s Build Something Exceptional
         </h1>
         <p className="text-base text-[#9d9f9e] leading-relaxed">
-          Whether you need architectural consulting, full-stack application development, or technical direction, leave a message below.
+          Whether you need architectural consulting, full-stack application development, or technical direction, leave a message or book a live 30-min call.
         </p>
+
+        {/* Interactive Mode Switcher Pill */}
+        <div className="pt-2 flex items-center justify-center">
+          <div className="inline-flex items-center p-1.5 rounded-2xl bg-[#191a1a] border border-[#343636] shadow-xl">
+            <button
+              type="button"
+              onClick={() => setMode('message')}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                mode === 'message'
+                  ? 'bg-[#d6f779] text-[#101111] shadow-lg shadow-[#d6f779]/20 font-bold'
+                  : 'text-[#9d9f9e] hover:text-white'
+              }`}
+            >
+              <Send className="w-4 h-4" />
+              <span>Send a Message</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('calendar')}
+              className={`flex items-center gap-2 px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                mode === 'calendar'
+                  ? 'bg-[#d6f779] text-[#101111] shadow-lg shadow-[#d6f779]/20 font-bold'
+                  : 'text-[#9d9f9e] hover:text-white'
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Book 30-Min Call</span>
+              <span className="hidden xs:inline-block text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-black/20">
+                LIVE
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-5xl mx-auto items-start">
         {/* Contact Info Cards */}
         <div className="lg:col-span-5 space-y-6">
+          {/* Instant Call Action Card */}
+          <div className="p-6 rounded-3xl glass-card border border-[#d6f779]/35 bg-[#191a1a] shadow-xl space-y-3">
+            <div className="flex items-center gap-2 text-[#d6f779] text-xs font-mono font-bold uppercase tracking-wider">
+              <Calendar className="w-4 h-4" />
+              <span>Direct Video Call</span>
+            </div>
+            <h4 className="text-base font-bold text-white">Prefer a live discovery call?</h4>
+            <p className="text-xs text-[#9d9f9e] leading-relaxed">
+              Skip back-and-forth emails. Pick an open slot directly on my calendar. Google Meet link will be generated automatically.
+            </p>
+            <button
+              type="button"
+              onClick={() => setMode('calendar')}
+              className="w-full py-2.5 px-4 rounded-xl bg-[#d6f779]/15 hover:bg-[#d6f779]/25 text-[#d6f779] border border-[#d6f779]/35 text-xs font-bold font-mono flex items-center justify-center gap-2 transition-all cursor-pointer"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>Select Date & Time on Calendar</span>
+            </button>
+          </div>
+
           <div className="p-6 rounded-3xl glass-card border border-[#343636] bg-[#191a1a] space-y-4">
             <h3 className="text-lg font-bold text-white">Direct Channels</h3>
 
@@ -119,9 +174,29 @@ export const Contact: React.FC = () => {
           </div>
         </div>
 
-        {/* Form */}
+        {/* Form or Calendar */}
         <div className="lg:col-span-7">
-          <div className="p-8 sm:p-10 rounded-3xl glass-panel border border-[#343636] bg-[#191a1a] shadow-2xl">
+          {mode === 'calendar' ? (
+            <div className="p-4 sm:p-6 rounded-3xl glass-panel border border-[#343636] bg-[#191a1a] shadow-2xl space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-[#343636]">
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <span>30-Minute Video Consultation</span>
+                  </h3>
+                  <p className="text-xs text-[#9d9f9e]">Direct Google Meet video conference</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMode('message')}
+                  className="text-xs font-mono text-[#d6f779] hover:underline cursor-pointer"
+                >
+                  ← Switch to message form
+                </button>
+              </div>
+              <CalEmbed height="600px" />
+            </div>
+          ) : (
+            <div className="p-8 sm:p-10 rounded-3xl glass-panel border border-[#343636] bg-[#191a1a] shadow-2xl">
             {submitted ? (
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
@@ -231,7 +306,8 @@ export const Contact: React.FC = () => {
                 </button>
               </form>
             )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
