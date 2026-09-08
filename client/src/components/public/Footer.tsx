@@ -138,7 +138,7 @@ export const Footer: React.FC = () => {
             >
               ©
             </Link>{' '}
-            {new Date().getFullYear()} {profile?.name || 'Shahzod'}. All rights reserved. Built with React 19, TypeScript & Prisma.
+            {new Date().getFullYear()} {profile?.name || 'Shahzod'}. All rights reserved.
           </div>
           <div className="flex items-center gap-4">
             <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
