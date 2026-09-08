@@ -1,0 +1,282 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #101111;
+    --foreground: #EEEEEE;
+    --card: #191a1a;
+    --card-foreground: #EEEEEE;
+    --popover: #202222;
+    --popover-foreground: #FFFFFF;
+    --primary: #d6f779;
+    --primary-foreground: #101111;
+    --secondary: #242626;
+    --secondary-foreground: #FFFFFF;
+    --muted: #252727;
+    --muted-foreground: #9d9f9e;
+    --accent: #d6f779;
+    --accent-glow: rgba(214, 247, 121, 0.25);
+    --destructive: #ee7a7a;
+    --border: #343636;
+    --input: #383b38;
+    --ring: #d6f779;
+  }
+
+  body {
+    background-color: #101111;
+    color: #EEEEEE;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+  }
+
+  body.oled,
+  body.dark {
+    background-color: #101111;
+    color: #EEEEEE;
+  }
+
+  body.light {
+    background-color: #F7F8F7;
+    color: #101111;
+  }
+}
+
+/* Custom sleek scrollbar matching eyramusic */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #101111;
+}
+::-webkit-scrollbar-thumb {
+  background: #343636;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4a504a;
+}
+
+/* Glassmorphism & Cards - Eyramusic Palette */
+.glass-panel {
+  background: rgba(25, 26, 26, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid #343636;
+}
+
+.glass-card {
+  background: rgba(25, 26, 26, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #343636;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(214, 247, 121, 0.45);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8), 0 0 20px -5px rgba(214, 247, 121, 0.18);
+}
+
+.glass-input {
+  background: #191a1a;
+  border: 1px solid #343636;
+  color: #EEEEEE;
+  transition: all 0.2s ease;
+}
+.glass-input:focus {
+  outline: none;
+  border-color: #d6f779;
+  box-shadow: 0 0 15px rgba(214, 247, 121, 0.3);
+}
+
+/* Glow effects */
+.cyber-glow {
+  box-shadow: 0 0 25px -5px rgba(214, 247, 121, 0.35);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #d6f779 0%, #ffffff 55%, #c3e665 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #d6f779 0%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Audio Player Custom Styling & Animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+@keyframes eq-dance-1 {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+@keyframes eq-dance-2 {
+  0%, 100% { height: 14px; }
+  50% { height: 5px; }
+}
+@keyframes eq-dance-3 {
+  0%, 100% { height: 6px; }
+  50% { height: 20px; }
+}
+@keyframes eq-dance-4 {
+  0%, 100% { height: 18px; }
+  50% { height: 8px; }
+}
+@keyframes eq-dance-5 {
+  0%, 100% { height: 8px; }
+  50% { height: 15px; }
+}
+
+.animate-eq-1 { animation: eq-dance-1 0.8s ease-in-out infinite; }
+.animate-eq-2 { animation: eq-dance-2 0.65s ease-in-out infinite; }
+.animate-eq-3 { animation: eq-dance-3 0.9s ease-in-out infinite; }
+.animate-eq-4 { animation: eq-dance-4 0.75s ease-in-out infinite; }
+.animate-eq-5 { animation: eq-dance-5 0.85s ease-in-out infinite; }
+
+/* Custom Sleek Audio Range Slider */
+input[type="range"].audio-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"].audio-range:focus {
+  outline: none;
+}
+
+input[type="range"].audio-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #d6f779;
+  box-shadow: 0 0 10px rgba(214, 247, 121, 0.8);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-top: -4px;
+}
+
+input[type="range"].audio-range::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+  box-shadow: 0 0 15px rgba(214, 247, 121, 1);
+}
+
+input[type="range"].audio-range::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+input[type="range"].audio-range::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background: #d6f779;
+  box-shadow: 0 0 10px rgba(214, 247, 121, 0.8);
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   MULTI-DEVICE RESPONSIVE SCALING & ACCESSIBILITY
+   Covers: Smartwatches (280px-350px), Phones (360px-640px),
+   Foldables/Tablets (641px-1024px), Laptops (1025px-1920px),
+   4K/8K Big Screen Smart TVs (2000px+)
+   ========================================================================== */
+
+/* Universal Safe Area insets for Notched Mobile & Smartwatches */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
+  padding-left: var(--sal);
+  padding-right: var(--sar);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* TV Remote & Keyboard D-Pad High-Contrast Focus Ring */
+:focus-visible {
+  outline: 2px solid #d6f779 !important;
+  outline-offset: 3px !important;
+  box-shadow: 0 0 15px rgba(214, 247, 121, 0.6) !important;
+}
+
+/* 1. Ultra-compact Displays & Smartwatches (width <= 360px) */
+@media (max-width: 360px) {
+  :root {
+    font-size: 13.5px;
+  }
+  .glass-panel, .glass-card {
+    padding: 0.75rem !important;
+    border-radius: 1rem !important;
+  }
+}
+
+/* 2. Tablets & Foldables (between 640px and 1024px) */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* 3. Ultra-Wide Monitors & Large Smart TVs (2K / 4K / 8K Displays) */
+@media (min-width: 2000px) {
+  :root {
+    font-size: 18.5px;
+  }
+  .max-w-7xl {
+    max-width: 1600px !important;
+  }
+}
+
+@media (min-width: 2560px) {
+  :root {
+    font-size: 21px;
+  }
+  .max-w-7xl {
+    max-width: 2000px !important;
+  }
+}
+
+@media (min-width: 3400px) {
+  :root {
+    font-size: 24px;
+  }
+  .max-w-7xl {
+    max-width: 2600px !important;
+  }
+}
+
+

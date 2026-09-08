@@ -1,0 +1,293 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  passwordHash String
+  name         String
+  role         String        @default("ADMIN") // ADMIN, EDITOR
+  avatarUrl    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  activityLogs ActivityLog[]
+}
+
+model Profile {
+  id             String   @id @default(uuid())
+  name           String   @default("Shahzod")
+  title          String   @default("Full-Stack Developer & Software Engineer")
+  bio            String   @default("Building scalable, robust cloud systems and high-performance digital experiences.")
+  avatarUrl      String?
+  heroImageUrl   String?
+  heroVideoUrl   String?
+  cvUrl          String?
+  ctaWorkText    String   @default("View My Work")
+  ctaContactText String   @default("Contact Me")
+  githubUrl      String?  @default("https://github.com")
+  linkedinUrl    String?  @default("https://linkedin.com")
+  twitterUrl     String?  @default("https://twitter.com")
+  telegramUrl    String?  @default("https://t.me")
+  instagramUrl   String?  @default("https://instagram.com")
+  statsJson      String   @default("{\"yearsExperience\":6,\"projectsCompleted\":45,\"happyClients\":32,\"codeCommits\":\"12.4k\"}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Project {
+  id             String         @id @default(uuid())
+  title          String
+  slug           String         @unique
+  shortDesc      String
+  fullDesc       String
+  coverImage     String
+  videoUrl       String?
+  audioUrl       String?
+  technologies   String         // Comma separated or JSON string
+  githubUrl      String?
+  liveDemoUrl    String?
+  client         String?
+  date           String?
+  category       String         @default("Web Application")
+  featured       Boolean        @default(false)
+  status         String         @default("PUBLISHED") // DRAFT, PUBLISHED, SCHEDULED, ARCHIVED
+  scheduledAt    DateTime?
+  sortOrder      Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  images         ProjectImage[]
+}
+
+model ProjectImage {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url       String
+  caption   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model News {
+  id          String      @id @default(uuid())
+  title       String
+  slug        String      @unique
+  shortDesc   String
+  fullContent String
+  coverImage  String
+  videoUrl    String?
+  audioUrl    String?
+  category    String      @default("Announcement")
+  tags        String?     // JSON or comma-separated
+  author      String      @default("Admin")
+  featured    Boolean     @default(false)
+  status      String      @default("PUBLISHED") // DRAFT, PUBLISHED, SCHEDULED, ARCHIVED, EXPIRED
+  scheduledAt DateTime?
+  expiresAt   DateTime?
+  viewCount   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  images      NewsImage[]
+}
+
+model NewsImage {
+  id        String   @id @default(uuid())
+  newsId    String
+  news      News     @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  url       String
+  caption   String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model BlogPost {
+  id          String      @id @default(uuid())
+  title       String
+  slug        String      @unique
+  excerpt     String
+  content     String      // Markdown or HTML
+  coverImage  String
+  videoUrl    String?
+  audioUrl    String?
+  category    String      @default("Engineering")
+  tags        String?     // Comma separated or JSON
+  author      String      @default("Shahzod")
+  readingTime String      @default("5 min read")
+  seoTitle    String?
+  seoDesc     String?
+  seoKeywords String?
+  ogImage     String?
+  featured    Boolean     @default(false)
+  status      String      @default("PUBLISHED") // DRAFT, PUBLISHED, SCHEDULED, ARCHIVED
+  scheduledAt DateTime?
+  publishedAt DateTime?   @default(now())
+  viewCount   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  images      BlogImage[]
+}
+
+model BlogImage {
+  id         String   @id @default(uuid())
+  blogPostId String
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  url        String
+  caption    String?
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
+model Skill {
+  id          String   @id @default(uuid())
+  name        String
+  icon        String?  @default("Code")
+  category    String   @default("Frontend") // Frontend, Backend, DevOps, Database, Tools
+  percentage  Int      @default(90)
+  description String?
+  sortOrder   Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Experience {
+  id           String   @id @default(uuid())
+  type         String   @default("WORK") // WORK, EDUCATION
+  role         String
+  organization String
+  location     String?
+  startDate    String
+  endDate      String?
+  current      Boolean  @default(false)
+  description  String
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Service {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  icon        String   @default("Code")
+  features    String   // JSON string of array of string features
+  sortOrder   Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Testimonial {
+  id         String   @id @default(uuid())
+  clientName String
+  role       String
+  company    String
+  avatarUrl  String?
+  content    String
+  rating     Int      @default(5)
+  sortOrder  Int      @default(0)
+  published  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model SocialLink {
+  id        String   @id @default(uuid())
+  platform  String   // GitHub, LinkedIn, Telegram, etc.
+  url       String
+  icon      String
+  isEnabled Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Media {
+  id           String   @id @default(uuid())
+  fileName     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  path         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AudioTrack {
+  id          String   @id @default(uuid())
+  title       String
+  artist      String   @default("Shahzod Beats")
+  coverUrl    String?
+  audioUrl    String
+  duration    String   @default("2:45")
+  description String?
+  published   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactMessage {
+  id         String   @id @default(uuid())
+  name       String
+  email      String
+  subject    String
+  message    String
+  isRead     Boolean  @default(false)
+  isArchived Boolean  @default(false)
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model NavigationItem {
+  id         String   @id @default(uuid())
+  label      String
+  url        String
+  isExternal Boolean  @default(false)
+  isVisible  Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model SeoSettings {
+  id              String   @id @default(uuid())
+  siteTitle       String   @default("Shahzod | Senior Full-Stack Engineer & Product Architect")
+  siteDescription String   @default("Senior Full-Stack Engineer portfolio featuring enterprise applications, scalable distributed backends, modern React frontend architectures, and technical writing.")
+  keywords        String   @default("Software Engineer, Full-Stack Developer, React, Node.js, TypeScript, PostgreSQL, Portfolio, Cloud Architecture")
+  favicon         String?
+  ogImage         String?
+  twitterCard     String   @default("summary_large_image")
+  robots          String   @default("index, follow")
+  canonicalUrl    String   @default("https://shahuz.dev")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model SiteSettings {
+  id             String   @id @default(uuid())
+  theme          String   @default("dark") // dark, oled, light
+  accentColor    String   @default("#00F2FE") // Neon Cyan default
+  enableSections String   @default("{\"hero\":true,\"about\":true,\"skills\":true,\"projects\":true,\"news\":true,\"blog\":true,\"services\":true,\"stats\":true,\"testimonials\":true,\"contact\":true}")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String   // CREATE, UPDATE, DELETE, PUBLISH, SCHEDULE
+  entityType String   // Project, News, BlogPost, Media, etc.
+  entityId   String?
+  details    String?
+  createdAt  DateTime @default(now())
+}
