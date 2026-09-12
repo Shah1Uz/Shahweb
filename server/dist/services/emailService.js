@@ -24,25 +24,21 @@ const createTransporter = async () => {
                     user,
                     pass,
                 },
+                connectionTimeout: 8000,
+                greetingTimeout: 8000,
+                socketTimeout: 10000,
             }),
             isTest: false,
             fromAddress: process.env.SMTP_FROM || `"Shahzod.site" <${user}>`,
         };
     }
-    // Graceful zero-config test account: ensures email sending works 100% without crashing
-    const testAccount = await nodemailer_1.default.createTestAccount();
+    // Instant local JSON transport that NEVER hangs on external API calls
     return {
         transporter: nodemailer_1.default.createTransport({
-            host: 'smtp.ethereal.email',
-            port: 587,
-            secure: false,
-            auth: {
-                user: testAccount.user,
-                pass: testAccount.pass,
-            },
+            jsonTransport: true,
         }),
         isTest: true,
-        fromAddress: `"Shahzod.site" <${testAccount.user}>`,
+        fromAddress: process.env.SMTP_FROM || `"Shahzod.site" <${user || 'shahuztech@gmail.com'}>`,
     };
 };
 exports.createTransporter = createTransporter;
