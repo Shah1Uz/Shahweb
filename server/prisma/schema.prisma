@@ -270,6 +270,7 @@ model SeoSettings {
   twitterCard     String   @default("summary_large_image")
   robots          String   @default("index, follow")
   canonicalUrl    String   @default("https://shahuz.dev")
+  brandName       String?  @default("SHAHZOD.DEV")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
@@ -279,6 +280,7 @@ model SiteSettings {
   theme          String   @default("dark") // dark, oled, light
   accentColor    String   @default("#00F2FE") // Neon Cyan default
   enableSections String   @default("{\"hero\":true,\"about\":true,\"skills\":true,\"projects\":true,\"news\":true,\"blog\":true,\"services\":true,\"stats\":true,\"testimonials\":true,\"contact\":true}")
+  audioSettings  String   @default("{\"enabled\":true,\"mode\":\"normal\",\"autoplay\":false,\"duration\":30,\"action\":\"next\",\"volume\":0.7}")
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

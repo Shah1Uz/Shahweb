@@ -191,6 +191,15 @@ export interface AudioTrack {
   sortOrder: number;
 }
 
+export interface AudioSettings {
+  enabled: boolean;
+  mode: 'normal' | 'preview30';
+  autoplay: boolean;
+  duration: number; // 30 seconds default
+  action: 'next' | 'pause'; // action after duration in preview mode
+  volume: number;
+}
+
 export interface ContactMessage {
   id: string;
   name: string;
@@ -228,6 +237,7 @@ export interface SeoSettings {
   twitterCard: string;
   robots: string;
   canonicalUrl: string;
+  brandName?: string | null;
 }
 
 export interface DashboardStats {

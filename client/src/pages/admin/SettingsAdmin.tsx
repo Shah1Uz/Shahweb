@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Lock, Palette, Globe, Check, ExternalLink, Clock } from 'lucide-react';
+import { Save, Lock, Palette, Globe, Check, ExternalLink, Clock, Terminal, Sparkles } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useToast } from '../../components/ui/Toast';
 import { useTheme } from '../../context/ThemeContext';
+import { useSettings } from '../../context/SettingsContext';
 
 export const SettingsAdmin: React.FC = () => {
   const { theme, setTheme, accentColor, setAccentColor } = useTheme();
+  const { refreshSettings } = useSettings();
   const [seo, setSeo] = useState({
     siteTitle: '',
     siteDescription: '',
     keywords: '',
     canonicalUrl: '',
     robots: 'index, follow',
+    brandName: 'SHAHZOD.DEV',
   });
 
   const [sections, setSections] = useState<any>({
@@ -43,7 +46,12 @@ export const SettingsAdmin: React.FC = () => {
     api
       .get('/content/settings')
       .then((res) => {
-        if (res.data.seo) setSeo(res.data.seo);
+        if (res.data.seo) {
+          setSeo({
+            ...res.data.seo,
+            brandName: res.data.seo.brandName || 'SHAHZOD.DEV',
+          });
+        }
         if (res.data.site?.enableSections) {
           try {
             setSections((prev: any) => ({ ...prev, ...JSON.parse(res.data.site.enableSections) }));
@@ -65,7 +73,9 @@ export const SettingsAdmin: React.FC = () => {
           enableSections: JSON.stringify(sections),
         },
       });
-      success('SEO, Theme & Homepage section preferences saved!');
+      await refreshSettings();
+      window.dispatchEvent(new Event('portfolio:reload_settings'));
+      success('SEO, Brand name & Homepage preferences saved!');
     } catch (err: any) {
       error(err.message || 'Failed to save settings');
     } finally {
@@ -265,6 +275,50 @@ export const SettingsAdmin: React.FC = () => {
         </div>
 
         <div className="space-y-4">
+          {/* Brand Logo Text (Navbar & Footer) */}
+          <div className="p-5 rounded-2xl bg-[#141515] border border-[#343636] space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <label className="text-xs font-mono font-bold text-white flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-[#d6f779]" />
+                <span>Website Brand Logo Text (SHAHZOD.DEV)</span>
+              </label>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-[#343636]">
+                <span className="text-[10px] uppercase font-mono text-[#9d9f9e]">Live Preview:</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-md bg-[#d6f779] flex items-center justify-center shadow-sm shadow-[#d6f779]/30">
+                    <Terminal className="w-3 h-3 text-[#101111] font-extrabold" />
+                  </div>
+                  <span className="font-mono font-bold text-xs tracking-wider text-white">
+                    {(() => {
+                      const text = seo.brandName?.trim() || 'SHAHZOD.DEV';
+                      const dotIdx = text.lastIndexOf('.');
+                      if (dotIdx !== -1) {
+                        return (
+                          <>
+                            {text.slice(0, dotIdx)}
+                            <span className="text-[#d6f779]">{text.slice(dotIdx)}</span>
+                          </>
+                        );
+                      }
+                      return text;
+                    })()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <input
+              type="text"
+              value={seo.brandName || ''}
+              onChange={(e) => setSeo({ ...seo, brandName: e.target.value })}
+              placeholder="SHAHZOD.DEV"
+              className="w-full glass-input rounded-xl px-4 py-2.5 text-xs font-mono text-white placeholder-gray-500 focus:border-[#d6f779]"
+            />
+            <p className="text-[11px] text-[#9d9f9e] leading-relaxed">
+              Ushbu yozuv butun veb-sayt bo'ylab yuqori menyudagi (Navbar) va pastdagi (Footer) asosiy brend logotipi matni sifatida ishlatiladi. Masalan: <code className="text-[#d6f779] font-mono">SHAHZOD.DEV</code>, <code className="text-[#d6f779] font-mono">SHAHZOD.UZ</code> yoki o'zingiz xohlagan brend nomi. Nuqtadan keyingi qism avtomatik ravishda yashil aksent rangda ajratib ko'rsatiladi.
+            </p>
+          </div>
+
           <div className="space-y-1.5">
             <label className="text-xs font-mono text-[#9d9f9e]">Global Site Title *</label>
             <input

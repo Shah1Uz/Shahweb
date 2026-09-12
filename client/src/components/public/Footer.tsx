@@ -2,9 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Github, Linkedin, Twitter, Send, Instagram, Terminal, ArrowUp } from 'lucide-react';
 import { useProfile } from '../../context/ProfileContext';
+import { useSettings } from '../../context/SettingsContext';
 
 export const Footer: React.FC = () => {
   const { profile } = useProfile();
+  const { brandName } = useSettings();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -24,7 +26,19 @@ export const Footer: React.FC = () => {
                 <Terminal className="w-5 h-5 text-[#101111] font-extrabold" />
               </div>
               <span className="font-mono font-bold text-lg tracking-wider text-white">
-                {profile?.name || 'SHAHZOD'}<span className="text-[#d6f779]">.DEV</span>
+                {(() => {
+                  const text = brandName || profile?.name || 'SHAHZOD.DEV';
+                  const dotIdx = text.lastIndexOf('.');
+                  if (dotIdx !== -1) {
+                    return (
+                      <>
+                        {text.slice(0, dotIdx)}
+                        <span className="text-[#d6f779]">{text.slice(dotIdx)}</span>
+                      </>
+                    );
+                  }
+                  return text;
+                })()}
               </span>
             </Link>
             <p className="text-sm text-[#9d9f9e] max-w-md leading-relaxed">
@@ -138,7 +152,7 @@ export const Footer: React.FC = () => {
             >
               ©
             </Link>{' '}
-            {new Date().getFullYear()} {profile?.name || 'Shahzod'}. All rights reserved.
+            {new Date().getFullYear()} {brandName || profile?.name || 'Shahzod'}. All rights reserved.
           </div>
           <div className="flex items-center gap-4">
             <a href="/sitemap.xml" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">

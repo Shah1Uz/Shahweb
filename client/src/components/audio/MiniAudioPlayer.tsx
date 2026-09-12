@@ -35,12 +35,17 @@ export const MiniAudioPlayer: React.FC = () => {
     setVolume,
     toggleDrawer,
     closeDrawer,
+    settings,
   } = useAudioPlayer();
 
   const [minimized, setMinimized] = useState(false);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
-  if (!tracks.length || !currentTrack) return null;
+  // If player is disabled in admin settings or no tracks available, do not render
+  if (!settings.enabled || !tracks.length || !currentTrack) return null;
+
+  const is30sMode = settings.mode === 'preview30';
+  const effectiveMaxTime = is30sMode ? (settings.duration || 30) : duration;
 
   const formatTime = (secs: number) => {
     if (isNaN(secs) || secs < 0) return '0:00';
@@ -53,7 +58,7 @@ export const MiniAudioPlayer: React.FC = () => {
     seek(parseFloat(e.target.value));
   };
 
-  const progressPercent = duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0;
+  const progressPercent = effectiveMaxTime > 0 ? Math.min(100, Math.max(0, (currentTime / effectiveMaxTime) * 100)) : 0;
   const volumePercent = Math.round(volume * 100);
 
   return (
@@ -86,9 +91,16 @@ export const MiniAudioPlayer: React.FC = () => {
 
             {/* Track metadata ticker */}
             <div className="flex flex-col min-w-0 max-w-[100px] sm:max-w-[130px]">
-              <span className="text-xs font-semibold text-white truncate group-hover:text-[#d6f779] transition-colors">
-                {currentTrack.title}
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-semibold text-white truncate group-hover:text-[#d6f779] transition-colors">
+                  {currentTrack.title}
+                </span>
+                {is30sMode && (
+                  <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-[#d6f779]/20 text-[#d6f779] border border-[#d6f779]/40 shrink-0">
+                    30s
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] text-[#9d9f9e] truncate">
                 {currentTrack.artist}
               </span>
@@ -165,6 +177,17 @@ export const MiniAudioPlayer: React.FC = () => {
                     </>
                   )}
                 </div>
+
+                {/* Mode Indicator Tag */}
+                {is30sMode ? (
+                  <span className="px-2 py-0.5 rounded-full bg-[#d6f779]/15 text-[#d6f779] border border-[#d6f779]/30 text-[9px] font-mono font-bold tracking-tight animate-pulse">
+                    ⚡ 30s Auto
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-white/5 text-[#9d9f9e] border border-white/10 text-[9px] font-mono">
+                    🎵 Oddiy Rejim
+                  </span>
+                )}
 
                 {/* Dancing Equalizer Frequency Bars */}
                 <div className="flex items-end gap-[3px] h-3.5 px-1">
@@ -269,7 +292,7 @@ export const MiniAudioPlayer: React.FC = () => {
                 <input
                   type="range"
                   min={0}
-                  max={duration || 100}
+                  max={effectiveMaxTime || 100}
                   value={currentTime}
                   onChange={handleSeek}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
@@ -279,7 +302,10 @@ export const MiniAudioPlayer: React.FC = () => {
               {/* Timestamp Indicator */}
               <div className="flex items-center justify-between text-[11px] font-mono text-[#9d9f9e]">
                 <span className="text-white/80 font-medium">{formatTime(currentTime)}</span>
-                <span className="text-[#9d9f9e]/60">{formatTime(duration)}</span>
+                <span className="text-[#9d9f9e]/60">
+                  {formatTime(effectiveMaxTime)}
+                  {is30sMode && <span className="text-[#d6f779] ml-1 text-[9px] font-bold">(30s Auto)</span>}
+                </span>
               </div>
             </div>
 

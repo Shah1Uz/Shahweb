@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAudioTrack = exports.updateAudioTrack = exports.createAudioTrack = exports.getAudioTracks = void 0;
+exports.updateAudioSettings = exports.getAudioSettings = exports.deleteAudioTrack = exports.updateAudioTrack = exports.createAudioTrack = exports.getAudioTracks = void 0;
 const config_1 = require("../config");
 const getAudioTracks = async (req, res) => {
     try {
@@ -99,3 +99,71 @@ const deleteAudioTrack = async (req, res) => {
     }
 };
 exports.deleteAudioTrack = deleteAudioTrack;
+// ------------------- AUDIO SETTINGS (MODE, AUTOPLAY, 30S PREVIEW) -------------------
+const getAudioSettings = async (_req, res) => {
+    try {
+        let site = await config_1.prisma.siteSettings.findFirst();
+        if (!site) {
+            site = await config_1.prisma.siteSettings.create({ data: {} });
+        }
+        let parsed = {
+            enabled: true,
+            mode: 'normal', // 'normal' | 'preview30'
+            autoplay: false,
+            duration: 30,
+            action: 'next', // 'next' | 'pause'
+            volume: 0.7,
+        };
+        if (site.audioSettings) {
+            try {
+                parsed = { ...parsed, ...JSON.parse(site.audioSettings) };
+            }
+            catch { }
+        }
+        res.json(parsed);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message || 'Failed to get audio settings' });
+    }
+};
+exports.getAudioSettings = getAudioSettings;
+const updateAudioSettings = async (req, res) => {
+    try {
+        const currentSite = await config_1.prisma.siteSettings.findFirst();
+        let currentSettings = {
+            enabled: true,
+            mode: 'normal',
+            autoplay: false,
+            duration: 30,
+            action: 'next',
+            volume: 0.7,
+        };
+        if (currentSite?.audioSettings) {
+            try {
+                currentSettings = { ...currentSettings, ...JSON.parse(currentSite.audioSettings) };
+            }
+            catch { }
+        }
+        const newSettings = {
+            ...currentSettings,
+            ...req.body,
+        };
+        let updatedSite;
+        if (currentSite) {
+            updatedSite = await config_1.prisma.siteSettings.update({
+                where: { id: currentSite.id },
+                data: { audioSettings: JSON.stringify(newSettings) },
+            });
+        }
+        else {
+            updatedSite = await config_1.prisma.siteSettings.create({
+                data: { audioSettings: JSON.stringify(newSettings) },
+            });
+        }
+        res.json(JSON.parse(updatedSite.audioSettings));
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message || 'Failed to update audio settings' });
+    }
+};
+exports.updateAudioSettings = updateAudioSettings;

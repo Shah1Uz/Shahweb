@@ -9,9 +9,17 @@ import {
   Loader2,
   Edit3,
   Volume2,
+  Zap,
+  Radio,
+  Sliders,
+  CheckCircle2,
+  Power,
+  RotateCcw,
+  Sparkles,
+  Save,
 } from 'lucide-react';
 import { api } from '../../lib/api';
-import { AudioTrack } from '../../types';
+import { AudioTrack, AudioSettings } from '../../types';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 
@@ -28,6 +36,17 @@ export const AudioAdmin: React.FC = () => {
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadStatusText, setUploadStatusText] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  // Audio Playback Automation Settings
+  const [audioSettings, setAudioSettings] = useState<AudioSettings>({
+    enabled: true,
+    mode: 'normal',
+    autoplay: false,
+    duration: 30,
+    action: 'next',
+    volume: 0.7,
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverFileInputRef = useRef<HTMLInputElement>(null);
@@ -54,8 +73,33 @@ export const AudioAdmin: React.FC = () => {
       .finally(() => setLoading(false));
   };
 
+  const loadSettings = () => {
+    api
+      .get('/audio/settings')
+      .then((res) => {
+        if (res.data) {
+          setAudioSettings((prev) => ({ ...prev, ...res.data }));
+        }
+      })
+      .catch(() => {});
+  };
+
+  const handleSaveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      await api.put('/audio/settings', audioSettings);
+      success('Musiqa sozlamalari muvaffaqiyatli saqlandi!');
+      notifyPlayerReload();
+    } catch (err: any) {
+      error(err.message || 'Sozlamalarni saqlashda xatolik yuz berdi');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
   useEffect(() => {
     loadTracks();
+    loadSettings();
     return () => {
       if (activeAudio) activeAudio.pause();
     };
@@ -386,6 +430,247 @@ export const AudioAdmin: React.FC = () => {
             <Plus className="w-4 h-4 text-[#d6f779]" />
             <span>Qo‘lda Kiritish</span>
           </button>
+        </div>
+      </div>
+
+      {/* ================= AUDIO AUTOMATION & MODE SWITCHER DECK ================= */}
+      <div className="p-6 sm:p-7 rounded-3xl bg-[#141515] border border-[#343636] shadow-2xl relative overflow-hidden space-y-6">
+        {/* Glow ambient highlight */}
+        <div className="absolute -top-12 -right-12 w-36 h-36 bg-[#d6f779]/10 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#343636]/60 pb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#d6f779]/10 border border-[#d6f779]/30 flex items-center justify-center text-[#d6f779]">
+              <Sliders className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <span>Musiqa Rejimlari va Avtomatlashtirish</span>
+                <span className="px-2 py-0.5 rounded-full bg-[#d6f779]/20 text-[#d6f779] text-[10px] font-mono font-bold">
+                  Boshqaruv Paneli
+                </span>
+              </h2>
+              <p className="text-xs text-[#9d9f9e] font-mono mt-0.5">
+                Saytdagi musiqani oddiy to‘liq rejimda yoki 30 sekundli avtomatik rejimda yangrashini boshqaring.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleSaveSettings}
+            disabled={savingSettings}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#d6f779] hover:bg-[#c3e665] text-[#101111] font-extrabold text-xs shadow-lg shadow-[#d6f779]/20 hover:scale-105 active:scale-95 transition-all self-start sm:self-auto shrink-0"
+          >
+            {savingSettings ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 stroke-[2.5]" />
+            )}
+            <span>Sozlamalarni Saqlash</span>
+          </button>
+        </div>
+
+        {/* Playback Mode Selector: 2 Big Interactive Cards */}
+        <div className="space-y-3">
+          <label className="text-xs font-mono uppercase tracking-wider text-[#9d9f9e] flex items-center gap-1.5">
+            <Radio className="w-3.5 h-3.5 text-[#d6f779]" />
+            <span>Asosiy Ijro Rejimini Tanlang:</span>
+          </label>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Mode 1: Oddiy Musiqa Rejimi */}
+            <div
+              onClick={() => setAudioSettings((prev) => ({ ...prev, mode: 'normal' }))}
+              className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                audioSettings.mode === 'normal'
+                  ? 'border-[#d6f779] bg-[#d6f779]/10 shadow-[0_0_25px_rgba(214,247,121,0.12)]'
+                  : 'border-[#343636] bg-[#191a1a]/60 hover:border-[#383a38] hover:bg-[#191a1a]'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                      audioSettings.mode === 'normal'
+                        ? 'bg-[#d6f779] text-[#101111]'
+                        : 'bg-[#242626] text-[#9d9f9e]'
+                    }`}
+                  >
+                    <Music className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Oddiy Musiqa (To‘liq ijro)</h3>
+                    <span className="text-[10px] font-mono text-[#9d9f9e]">Standart Full-Length Player</span>
+                  </div>
+                </div>
+
+                <div
+                  className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                    audioSettings.mode === 'normal'
+                      ? 'border-[#d6f779] bg-[#d6f779] text-[#101111]'
+                      : 'border-[#383a38] bg-transparent'
+                  }`}
+                >
+                  {audioSettings.mode === 'normal' && <CheckCircle2 className="w-4 h-4 fill-current" />}
+                </div>
+              </div>
+
+              <p className="text-xs text-[#9d9f9e] mt-3 leading-relaxed">
+                Tashrif buyuruvchi musiqalarni to‘liq davomiylikda, cheklovlarsiz eshita oladi. Istalgan vaqtda keyingi trekka o‘tishi yoki pauza qilishi mumkin.
+              </p>
+
+              <div className="mt-4 pt-3 border-t border-[#343636]/50 flex items-center gap-2 text-[11px] font-mono text-[#d6f779]">
+                <span className="w-2 h-2 rounded-full bg-[#d6f779]" />
+                <span>To‘liq qo‘shiqlar yangraydi</span>
+              </div>
+            </div>
+
+            {/* Mode 2: 30 Sekundli Avtomatlashtirilgan Rejim */}
+            <div
+              onClick={() => setAudioSettings((prev) => ({ ...prev, mode: 'preview30' }))}
+              className={`p-5 rounded-2xl border-2 transition-all cursor-pointer relative flex flex-col justify-between ${
+                audioSettings.mode === 'preview30'
+                  ? 'border-[#d6f779] bg-[#d6f779]/10 shadow-[0_0_25px_rgba(214,247,121,0.12)]'
+                  : 'border-[#343636] bg-[#191a1a]/60 hover:border-[#383a38] hover:bg-[#191a1a]'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                      audioSettings.mode === 'preview30'
+                        ? 'bg-[#d6f779] text-[#101111]'
+                        : 'bg-[#242626] text-[#9d9f9e]'
+                    }`}
+                  >
+                    <Zap className="w-5 h-5 fill-current" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-bold text-white">30 Sekundli Avto-Rejim</h3>
+                      <span className="px-1.5 py-0.2 rounded bg-[#d6f779] text-[#101111] text-[9px] font-mono font-extrabold uppercase">
+                        Avtomat
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono text-[#9d9f9e]">30s Highlight & Quick Preview</span>
+                  </div>
+                </div>
+
+                <div
+                  className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                    audioSettings.mode === 'preview30'
+                      ? 'border-[#d6f779] bg-[#d6f779] text-[#101111]'
+                      : 'border-[#383a38] bg-transparent'
+                  }`}
+                >
+                  {audioSettings.mode === 'preview30' && <CheckCircle2 className="w-4 h-4 fill-current" />}
+                </div>
+              </div>
+
+              <p className="text-xs text-[#9d9f9e] mt-3 leading-relaxed">
+                Har bir musiqa atigi 30 sekund yangraydi! Vaqt tugashi bilan avtomatik tarzda keyingi musiqaga o‘tadi (yoki to‘xtaydi). Saytga zamonaviy va dinamik aura beradi.
+              </p>
+
+              <div className="mt-4 pt-3 border-t border-[#343636]/50 flex items-center gap-2 text-[11px] font-mono text-[#d6f779]">
+                <Sparkles className="w-3.5 h-3.5 text-[#d6f779]" />
+                <span>30 soniyadan so‘ng avto-harakat</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Automation Details & Switches */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-[#343636]/50">
+          {/* Switch 1: Autoplay on Visit */}
+          <div className="p-4 rounded-2xl bg-[#191a1a]/80 border border-[#343636] flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <Play className="w-3.5 h-3.5 text-[#d6f779]" />
+                Saytga Kirganda Avto-Ijro
+              </span>
+              <p className="text-[11px] text-[#9d9f9e] mt-0.5">
+                Tashrif buyuruvchi kirganda musiqa avtomatik boshlanadi
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setAudioSettings((prev) => ({ ...prev, autoplay: !prev.autoplay }))}
+              className={`w-12 h-6.5 rounded-full transition-colors relative shrink-0 p-0.5 border ${
+                audioSettings.autoplay
+                  ? 'bg-[#d6f779] border-[#d6f779]'
+                  : 'bg-[#242626] border-[#383a3a]'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full transition-transform ${
+                  audioSettings.autoplay
+                    ? 'translate-x-5 bg-[#101111]'
+                    : 'translate-x-0 bg-[#9d9f9e]'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Switch 2: 30s Action (Next track or Pause) */}
+          <div className="p-4 rounded-2xl bg-[#191a1a]/80 border border-[#343636] flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <RotateCcw className="w-3.5 h-3.5 text-[#d6f779]" />
+                30 Soniyadan So‘ng Amal
+              </span>
+              <p className="text-[11px] text-[#9d9f9e] mt-0.5">
+                {audioSettings.action === 'next'
+                  ? 'Keyingi musiqaga o‘tish (Non-stop pleylist)'
+                  : 'Pauza qilish (Faqat 30s tinglash)'}
+              </p>
+            </div>
+
+            <select
+              value={audioSettings.action}
+              onChange={(e) =>
+                setAudioSettings((prev) => ({ ...prev, action: e.target.value as 'next' | 'pause' }))
+              }
+              className="px-2.5 py-1.5 rounded-xl bg-[#101111] border border-[#343636] text-[#d6f779] text-xs font-mono font-bold focus:outline-none focus:border-[#d6f779]"
+            >
+              <option value="next">Keyingisi ⏭️</option>
+              <option value="pause">Pauza ⏸️</option>
+            </select>
+          </div>
+
+          {/* Switch 3: Mini Player Visibility */}
+          <div className="p-4 rounded-2xl bg-[#191a1a]/80 border border-[#343636] flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                <Power className="w-3.5 h-3.5 text-[#d6f779]" />
+                Pleyerni Saytda Ko‘rsatish
+              </span>
+              <p className="text-[11px] text-[#9d9f9e] mt-0.5">
+                {audioSettings.enabled
+                  ? 'Saytda pleyer ko‘rinadi'
+                  : 'Pleyer saytda butunlay yashirilgan'}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setAudioSettings((prev) => ({ ...prev, enabled: !prev.enabled }))}
+              className={`w-12 h-6.5 rounded-full transition-colors relative shrink-0 p-0.5 border ${
+                audioSettings.enabled
+                  ? 'bg-[#d6f779] border-[#d6f779]'
+                  : 'bg-[#242626] border-[#383a3a]'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 rounded-full transition-transform ${
+                  audioSettings.enabled
+                    ? 'translate-x-5 bg-[#101111]'
+                    : 'translate-x-0 bg-[#9d9f9e]'
+                }`}
+              />
+            </button>
+          </div>
         </div>
       </div>
 

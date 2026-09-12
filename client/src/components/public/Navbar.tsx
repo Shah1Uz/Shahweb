@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useSettings } from '../../context/SettingsContext';
 import { api } from '../../lib/api';
 import { NavigationItem } from '../../types';
 
@@ -27,6 +28,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
   const [scrolled, setScrolled] = useState(false);
   const { user } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { brandName } = useSettings();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -125,14 +127,26 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSearch }) => {
           to="/"
           onClick={handleLogoClick}
           className="flex items-center gap-2 group shrink-0 select-none cursor-pointer"
-          title="SHAHZOD.DEV"
+          title={brandName}
         >
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#d6f779] flex items-center justify-center shadow-lg shadow-[#d6f779]/25 group-hover:scale-105 transition-transform shrink-0">
             <Terminal className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-[#101111] font-extrabold" />
           </div>
           <div className="flex flex-col min-w-0">
             <span className="font-mono font-bold text-sm sm:text-base lg:text-lg tracking-wider text-white flex items-center gap-0.5">
-              SHAHZOD<span className="text-[#d6f779]">.DEV</span>
+              {(() => {
+                const text = brandName || 'SHAHZOD.DEV';
+                const dotIdx = text.lastIndexOf('.');
+                if (dotIdx !== -1) {
+                  return (
+                    <>
+                      {text.slice(0, dotIdx)}
+                      <span className="text-[#d6f779]">{text.slice(dotIdx)}</span>
+                    </>
+                  );
+                }
+                return text;
+              })()}
             </span>
             <span className="hidden xs:block text-[8px] sm:text-[9px] uppercase font-mono tracking-widest text-[#9d9f9e] truncate">
               Staff Engineer

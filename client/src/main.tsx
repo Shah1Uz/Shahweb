@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AudioPlayerProvider } from './context/AudioPlayerContext';
 import { ProfileProvider } from './context/ProfileContext';
+import { SettingsProvider } from './context/SettingsContext';
 import { ToastProvider } from './components/ui/Toast';
 import App from './App';
 import './index.css';
@@ -24,11 +25,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <ThemeProvider>
         <AuthProvider>
           <ProfileProvider>
-            <AudioPlayerProvider>
-              <ToastProvider>
-                <App />
-              </ToastProvider>
-            </AudioPlayerProvider>
+            <SettingsProvider>
+              <AudioPlayerProvider>
+                <ToastProvider>
+                  <App />
+                </ToastProvider>
+              </AudioPlayerProvider>
+            </SettingsProvider>
           </ProfileProvider>
         </AuthProvider>
       </ThemeProvider>

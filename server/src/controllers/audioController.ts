@@ -100,3 +100,71 @@ export const deleteAudioTrack = async (req: AuthRequest, res: Response): Promise
     res.status(500).json({ error: error.message || 'Failed to delete audio track' });
   }
 };
+
+// ------------------- AUDIO SETTINGS (MODE, AUTOPLAY, 30S PREVIEW) -------------------
+export const getAudioSettings = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    let site = await prisma.siteSettings.findFirst();
+    if (!site) {
+      site = await prisma.siteSettings.create({ data: {} });
+    }
+    let parsed = {
+      enabled: true,
+      mode: 'normal', // 'normal' | 'preview30'
+      autoplay: false,
+      duration: 30,
+      action: 'next', // 'next' | 'pause'
+      volume: 0.7,
+    };
+    if ((site as any).audioSettings) {
+      try {
+        parsed = { ...parsed, ...JSON.parse((site as any).audioSettings) };
+      } catch {}
+    }
+    res.json(parsed);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to get audio settings' });
+  }
+};
+
+export const updateAudioSettings = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const currentSite = await prisma.siteSettings.findFirst();
+    let currentSettings = {
+      enabled: true,
+      mode: 'normal',
+      autoplay: false,
+      duration: 30,
+      action: 'next',
+      volume: 0.7,
+    };
+
+    if ((currentSite as any)?.audioSettings) {
+      try {
+        currentSettings = { ...currentSettings, ...JSON.parse((currentSite as any).audioSettings) };
+      } catch {}
+    }
+
+    const newSettings = {
+      ...currentSettings,
+      ...req.body,
+    };
+
+    let updatedSite;
+    if (currentSite) {
+      updatedSite = await prisma.siteSettings.update({
+        where: { id: currentSite.id },
+        data: { audioSettings: JSON.stringify(newSettings) } as any,
+      });
+    } else {
+      updatedSite = await prisma.siteSettings.create({
+        data: { audioSettings: JSON.stringify(newSettings) } as any,
+      });
+    }
+
+    res.json(JSON.parse((updatedSite as any).audioSettings));
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to update audio settings' });
+  }
+};
+

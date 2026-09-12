@@ -321,27 +321,29 @@ export const updateSettings = async (req: AuthRequest, res: Response): Promise<v
 
     let updatedSite;
     if (site) {
+      const { id, createdAt, updatedAt, ...siteData } = site;
       const currentSite = await prisma.siteSettings.findFirst();
       if (currentSite) {
         updatedSite = await prisma.siteSettings.update({
           where: { id: currentSite.id },
-          data: site,
+          data: siteData,
         });
       } else {
-        updatedSite = await prisma.siteSettings.create({ data: site });
+        updatedSite = await prisma.siteSettings.create({ data: siteData });
       }
     }
 
     let updatedSeo;
     if (seo) {
+      const { id, createdAt, updatedAt, ...seoData } = seo;
       const currentSeo = await prisma.seoSettings.findFirst();
       if (currentSeo) {
         updatedSeo = await prisma.seoSettings.update({
           where: { id: currentSeo.id },
-          data: seo,
+          data: seoData,
         });
       } else {
-        updatedSeo = await prisma.seoSettings.create({ data: seo });
+        updatedSeo = await prisma.seoSettings.create({ data: seoData });
       }
     }
 

@@ -342,28 +342,30 @@ const updateSettings = async (req, res) => {
         const { site, seo } = req.body;
         let updatedSite;
         if (site) {
+            const { id, createdAt, updatedAt, ...siteData } = site;
             const currentSite = await config_1.prisma.siteSettings.findFirst();
             if (currentSite) {
                 updatedSite = await config_1.prisma.siteSettings.update({
                     where: { id: currentSite.id },
-                    data: site,
+                    data: siteData,
                 });
             }
             else {
-                updatedSite = await config_1.prisma.siteSettings.create({ data: site });
+                updatedSite = await config_1.prisma.siteSettings.create({ data: siteData });
             }
         }
         let updatedSeo;
         if (seo) {
+            const { id, createdAt, updatedAt, ...seoData } = seo;
             const currentSeo = await config_1.prisma.seoSettings.findFirst();
             if (currentSeo) {
                 updatedSeo = await config_1.prisma.seoSettings.update({
                     where: { id: currentSeo.id },
-                    data: seo,
+                    data: seoData,
                 });
             }
             else {
-                updatedSeo = await config_1.prisma.seoSettings.create({ data: seo });
+                updatedSeo = await config_1.prisma.seoSettings.create({ data: seoData });
             }
         }
         res.json({ site: updatedSite, seo: updatedSeo });
