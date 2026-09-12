@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ExternalLink, Github, ArrowRight, FolderGit2, X } from 'lucide-react';
+import { Search, ExternalLink, Github, ArrowRight, FolderGit2, X, Eye, Heart } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Project } from '../../types';
 import { Badge } from '../../components/ui/Badge';
@@ -125,6 +125,17 @@ export const Projects: React.FC = () => {
                   />
                   <div className="absolute top-3 left-3">
                     <Badge variant="white">{project.category}</Badge>
+                  </div>
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#101111]/80 backdrop-blur-md border border-[#343636] text-[10px] font-mono text-white">
+                    <span className="flex items-center gap-1 text-cyan-300">
+                      <Eye className="w-3 h-3" />
+                      <span>{project.viewCount || 0}</span>
+                    </span>
+                    <span className="text-gray-600">•</span>
+                    <span className="flex items-center gap-1 text-rose-400">
+                      <Heart className="w-3 h-3 fill-rose-500/30" />
+                      <span>{project.likeCount || 0}</span>
+                    </span>
                   </div>
                 </div>
 

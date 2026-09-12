@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProject = exports.updateProject = exports.createProject = exports.getProjectBySlug = exports.getProjects = void 0;
+exports.updateProjectStats = exports.reactToProject = exports.deleteProject = exports.updateProject = exports.createProject = exports.getProjectBySlug = exports.getProjects = void 0;
 const config_1 = require("../config");
 const getProjects = async (req, res) => {
     try {
@@ -53,8 +53,9 @@ exports.getProjects = getProjects;
 const getProjectBySlug = async (req, res) => {
     try {
         const { slug } = req.params;
-        const project = await config_1.prisma.project.findUnique({
+        const project = await config_1.prisma.project.update({
             where: { slug },
+            data: { viewCount: { increment: 1 } },
             include: {
                 images: {
                     orderBy: { sortOrder: 'asc' },
@@ -68,7 +69,22 @@ const getProjectBySlug = async (req, res) => {
         res.json(project);
     }
     catch (error) {
-        res.status(500).json({ error: error.message || 'Failed to fetch project' });
+        try {
+            const fallback = await config_1.prisma.project.findUnique({
+                where: { slug: req.params.slug },
+                include: {
+                    images: {
+                        orderBy: { sortOrder: 'asc' },
+                    },
+                },
+            });
+            if (fallback) {
+                res.json(fallback);
+                return;
+            }
+        }
+        catch { }
+        res.status(404).json({ error: 'Project not found' });
     }
 };
 exports.getProjectBySlug = getProjectBySlug;
@@ -178,6 +194,8 @@ const updateProject = async (req, res) => {
                 status,
                 scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
                 sortOrder: sortOrder !== undefined ? parseInt(sortOrder, 10) : undefined,
+                viewCount: req.body.viewCount !== undefined ? Math.max(0, parseInt(req.body.viewCount, 10)) : undefined,
+                likeCount: req.body.likeCount !== undefined ? Math.max(0, parseInt(req.body.likeCount, 10)) : undefined,
             },
             include: { images: true },
         });
@@ -220,3 +238,67 @@ const deleteProject = async (req, res) => {
     }
 };
 exports.deleteProject = deleteProject;
+// Public reaction endpoint
+const reactToProject = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const delta = typeof req.body.delta === 'number' ? req.body.delta : 1;
+        const project = await config_1.prisma.project.update({
+            where: { id },
+            data: {
+                likeCount: {
+                    increment: delta,
+                },
+            },
+            select: {
+                id: true,
+                likeCount: true,
+                viewCount: true,
+            },
+        });
+        res.json({ success: true, likeCount: project.likeCount, viewCount: project.viewCount });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message || 'Failed to record reaction' });
+    }
+};
+exports.reactToProject = reactToProject;
+// Admin stats adjustment endpoint (add, subtract, or override)
+const updateProjectStats = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { viewCount, likeCount, deltaViews, deltaLikes } = req.body;
+        const current = await config_1.prisma.project.findUnique({ where: { id } });
+        if (!current) {
+            res.status(404).json({ error: 'Project not found' });
+            return;
+        }
+        let newViews = current.viewCount;
+        if (typeof viewCount === 'number') {
+            newViews = Math.max(0, viewCount);
+        }
+        else if (typeof deltaViews === 'number') {
+            newViews = Math.max(0, current.viewCount + deltaViews);
+        }
+        let newLikes = current.likeCount;
+        if (typeof likeCount === 'number') {
+            newLikes = Math.max(0, likeCount);
+        }
+        else if (typeof deltaLikes === 'number') {
+            newLikes = Math.max(0, current.likeCount + deltaLikes);
+        }
+        const updated = await config_1.prisma.project.update({
+            where: { id },
+            data: {
+                viewCount: newViews,
+                likeCount: newLikes,
+            },
+            include: { images: true },
+        });
+        res.json(updated);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message || 'Failed to update project stats' });
+    }
+};
+exports.updateProjectStats = updateProjectStats;

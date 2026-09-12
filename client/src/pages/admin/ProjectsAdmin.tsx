@@ -10,12 +10,15 @@ import {
   X,
   Upload,
   Image as ImageIcon,
+  Eye,
+  Heart,
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Project } from '../../types';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 import { Badge } from '../../components/ui/Badge';
+import { StatsModal } from '../../components/admin/StatsModal';
 
 export const ProjectsAdmin: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -23,6 +26,8 @@ export const ProjectsAdmin: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [statsProject, setStatsProject] = useState<Project | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Form State
@@ -262,6 +267,7 @@ export const ProjectsAdmin: React.FC = () => {
                 <th className="p-4">Category</th>
                 <th className="p-4">Status</th>
                 <th className="p-4">Featured</th>
+                <th className="p-4">Reactions & Views</th>
                 <th className="p-4">Created</th>
                 <th className="p-4 text-right">Actions</th>
               </tr>
@@ -269,13 +275,13 @@ export const ProjectsAdmin: React.FC = () => {
             <tbody className="divide-y divide-white/5">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-500 font-mono">
+                  <td colSpan={7} className="p-8 text-center text-gray-500 font-mono">
                     Loading records...
                   </td>
                 </tr>
               ) : projects.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-gray-500 font-mono">
+                  <td colSpan={7} className="p-8 text-center text-gray-500 font-mono">
                     No projects found. Click "Add New Project" to create one.
                   </td>
                 </tr>
@@ -317,6 +323,27 @@ export const ProjectsAdmin: React.FC = () => {
                       ) : (
                         <span className="text-gray-500 font-mono text-[11px]">Standard</span>
                       )}
+                    </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => {
+                          setStatsProject(project);
+                          setStatsModalOpen(true);
+                        }}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-400/50 transition-all font-mono text-[11px] group"
+                        title="Reaksiyalar va ko'rishlar sonini o'zgartirish (+/-)"
+                      >
+                        <span className="flex items-center gap-1 text-cyan-300">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>{project.viewCount || 0}</span>
+                        </span>
+                        <span className="text-gray-600">•</span>
+                        <span className="flex items-center gap-1 text-rose-400">
+                          <Heart className="w-3.5 h-3.5 fill-rose-500/30" />
+                          <span>{project.likeCount || 0}</span>
+                        </span>
+                        <span className="text-[10px] text-gray-400 group-hover:text-cyan-300 font-bold ml-0.5">±</span>
+                      </button>
                     </td>
                     <td className="p-4 text-gray-400 font-mono">
                       {new Date(project.createdAt).toLocaleDateString()}
@@ -643,6 +670,31 @@ export const ProjectsAdmin: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* STATS & REACTIONS MODAL */}
+      {statsProject && (
+        <StatsModal
+          isOpen={statsModalOpen}
+          onClose={() => {
+            setStatsModalOpen(false);
+            setStatsProject(null);
+          }}
+          title={statsProject.title}
+          type="project"
+          itemId={statsProject.id}
+          initialViews={statsProject.viewCount || 0}
+          initialLikes={statsProject.likeCount || 0}
+          onSuccess={(newViews, newLikes) => {
+            setProjects((prev) =>
+              prev.map((p) =>
+                p.id === statsProject.id
+                  ? { ...p, viewCount: newViews, likeCount: newLikes }
+                  : p
+              )
+            );
+          }}
+        />
+      )}
     </div>
   );
 };

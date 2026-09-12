@@ -378,7 +378,7 @@ exports.updateSettings = updateSettings;
 // ------------------- DASHBOARD STATS & RECENT ACTIVITY -------------------
 const getDashboardStats = async (_req, res) => {
     try {
-        const [totalProjects, publishedProjects, draftProjects, scheduledProjects, totalNews, publishedNews, scheduledNews, totalBlogPosts, publishedBlogPosts, totalMessages, unreadMessages, totalMedia, mediaSizeAgg, recentActivity,] = await Promise.all([
+        const [totalProjects, publishedProjects, draftProjects, scheduledProjects, totalNews, publishedNews, scheduledNews, totalBlogPosts, publishedBlogPosts, totalMessages, unreadMessages, totalMedia, mediaSizeAgg, recentActivity, projectStatsAgg, blogStatsAgg, topProjects, topBlogPosts,] = await Promise.all([
             config_1.prisma.project.count(),
             config_1.prisma.project.count({ where: { status: 'PUBLISHED' } }),
             config_1.prisma.project.count({ where: { status: 'DRAFT' } }),
@@ -396,7 +396,23 @@ const getDashboardStats = async (_req, res) => {
                 take: 10,
                 orderBy: { createdAt: 'desc' },
             }),
+            config_1.prisma.project.aggregate({ _sum: { viewCount: true, likeCount: true } }),
+            config_1.prisma.blogPost.aggregate({ _sum: { viewCount: true, likeCount: true } }),
+            config_1.prisma.project.findMany({
+                take: 5,
+                orderBy: [{ likeCount: 'desc' }, { viewCount: 'desc' }],
+                select: { id: true, title: true, slug: true, coverImage: true, viewCount: true, likeCount: true, category: true },
+            }),
+            config_1.prisma.blogPost.findMany({
+                take: 5,
+                orderBy: [{ likeCount: 'desc' }, { viewCount: 'desc' }],
+                select: { id: true, title: true, slug: true, coverImage: true, viewCount: true, likeCount: true, category: true },
+            }),
         ]);
+        const totalProjectViews = projectStatsAgg._sum.viewCount || 0;
+        const totalProjectLikes = projectStatsAgg._sum.likeCount || 0;
+        const totalBlogViews = blogStatsAgg._sum.viewCount || 0;
+        const totalBlogLikes = blogStatsAgg._sum.likeCount || 0;
         res.json({
             counts: {
                 projects: {
@@ -422,7 +438,17 @@ const getDashboardStats = async (_req, res) => {
                     total: totalMedia,
                     totalBytes: mediaSizeAgg._sum.size || 0,
                 },
+                engagement: {
+                    totalViews: totalProjectViews + totalBlogViews,
+                    totalLikes: totalProjectLikes + totalBlogLikes,
+                    projectViews: totalProjectViews,
+                    projectLikes: totalProjectLikes,
+                    blogViews: totalBlogViews,
+                    blogLikes: totalBlogLikes,
+                },
             },
+            topProjects,
+            topBlogPosts,
             recentActivity,
         });
     }

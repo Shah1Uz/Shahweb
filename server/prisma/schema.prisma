@@ -60,6 +60,8 @@ model Project {
   status         String         @default("PUBLISHED") // DRAFT, PUBLISHED, SCHEDULED, ARCHIVED
   scheduledAt    DateTime?
   sortOrder      Int            @default(0)
+  viewCount      Int            @default(0)
+  likeCount      Int            @default(0)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   images         ProjectImage[]
@@ -92,6 +94,7 @@ model News {
   scheduledAt DateTime?
   expiresAt   DateTime?
   viewCount   Int         @default(0)
+  likeCount   Int         @default(0)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   images      NewsImage[]
@@ -129,6 +132,7 @@ model BlogPost {
   scheduledAt DateTime?
   publishedAt DateTime?   @default(now())
   viewCount   Int         @default(0)
+  likeCount   Int         @default(0)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   images      BlogImage[]

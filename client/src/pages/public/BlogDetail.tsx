@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, Calendar, User, Share2, Check } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, User, Share2, Check, Eye } from 'lucide-react';
 import { api } from '../../lib/api';
 import { BlogPost } from '../../types';
 import { MarkdownRenderer } from '../../components/ui/MarkdownRenderer';
 import { Badge } from '../../components/ui/Badge';
+import { ReactionButton } from '../../components/public/ReactionButton';
 
 export const BlogDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -78,29 +79,37 @@ export const BlogDetail: React.FC = () => {
               {post.readingTime}
             </span>
           </div>
-          <button
-            onClick={copyUrl}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#191a1a] hover:bg-[#202222] text-xs font-mono text-[#EEEEEE] border border-[#343636] transition-colors"
-          >
-            {copiedLink ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-[#d6f779]" />
-                <span className="text-[#d6f779]">Link copied</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3.5 h-3.5" />
-                <span>Share</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-3">
+            <ReactionButton
+              id={post.id}
+              type="blog"
+              initialLikes={post.likeCount}
+              size="md"
+            />
+            <button
+              onClick={copyUrl}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#191a1a] hover:bg-[#202222] text-xs font-mono text-[#EEEEEE] border border-[#343636] transition-colors"
+            >
+              {copiedLink ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-[#d6f779]" />
+                  <span className="text-[#d6f779]">Link copied</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Share</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
           {post.title}
         </h1>
 
-        <div className="flex items-center gap-4 text-xs font-mono text-[#9d9f9e] border-b border-[#343636] pb-6">
+        <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-[#9d9f9e] border-b border-[#343636] pb-6">
           <span className="flex items-center gap-1">
             <User className="w-3.5 h-3.5" />
             {post.author}
@@ -114,6 +123,11 @@ export const BlogDetail: React.FC = () => {
               year: 'numeric',
             })}
           </span>
+          <span>•</span>
+          <span className="flex items-center gap-1 text-cyan-400">
+            <Eye className="w-3.5 h-3.5" />
+            <span>{(post.viewCount || 0)} views</span>
+          </span>
         </div>
       </div>
 
@@ -123,8 +137,23 @@ export const BlogDetail: React.FC = () => {
       </div>
 
       {/* Markdown Content */}
-      <div className="p-8 rounded-3xl glass-card border border-[#343636] bg-[#191a1a]">
+      <div className="p-8 rounded-3xl glass-card border border-[#343636] bg-[#191a1a] space-y-8">
         <MarkdownRenderer content={post.content} />
+
+        {/* Reaction Section */}
+        <div className="pt-6 border-t border-[#343636] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h4 className="text-sm font-bold text-white">Maqola sizga ma'qul keldimi?</h4>
+            <p className="text-xs text-[#9d9f9e]">Reaksiya qoldiring va muallifni qo'llab-quvvatlang</p>
+          </div>
+          <ReactionButton
+            id={post.id}
+            type="blog"
+            initialLikes={post.likeCount}
+            initialViews={post.viewCount}
+            size="lg"
+          />
+        </div>
       </div>
 
       {/* Tags */}

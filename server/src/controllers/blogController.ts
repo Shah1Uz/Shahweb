@@ -250,6 +250,8 @@ export const updateBlogPost = async (req: AuthRequest, res: Response): Promise<v
         status,
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
         publishedAt: status === 'PUBLISHED' && !existing.publishedAt ? new Date() : undefined,
+        viewCount: req.body.viewCount !== undefined ? Math.max(0, parseInt(req.body.viewCount, 10)) : undefined,
+        likeCount: req.body.likeCount !== undefined ? Math.max(0, parseInt(req.body.likeCount, 10)) : undefined,
       },
       include: { images: true },
     });
@@ -292,5 +294,72 @@ export const deleteBlogPost = async (req: AuthRequest, res: Response): Promise<v
     res.json({ message: 'Blog post deleted successfully' });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to delete blog post' });
+  }
+};
+
+// Public reaction endpoint
+export const reactToBlogPost = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const delta = typeof req.body.delta === 'number' ? req.body.delta : 1;
+
+    const post = await prisma.blogPost.update({
+      where: { id },
+      data: {
+        likeCount: {
+          increment: delta,
+        },
+      },
+      select: {
+        id: true,
+        likeCount: true,
+        viewCount: true,
+      },
+    });
+
+    res.json({ success: true, likeCount: post.likeCount, viewCount: post.viewCount });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to record reaction' });
+  }
+};
+
+// Admin stats adjustment endpoint (add, subtract, or override)
+export const updateBlogStats = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { viewCount, likeCount, deltaViews, deltaLikes } = req.body;
+
+    const current = await prisma.blogPost.findUnique({ where: { id } });
+    if (!current) {
+      res.status(404).json({ error: 'Blog post not found' });
+      return;
+    }
+
+    let newViews = current.viewCount;
+    if (typeof viewCount === 'number') {
+      newViews = Math.max(0, viewCount);
+    } else if (typeof deltaViews === 'number') {
+      newViews = Math.max(0, current.viewCount + deltaViews);
+    }
+
+    let newLikes = current.likeCount;
+    if (typeof likeCount === 'number') {
+      newLikes = Math.max(0, likeCount);
+    } else if (typeof deltaLikes === 'number') {
+      newLikes = Math.max(0, current.likeCount + deltaLikes);
+    }
+
+    const updated = await prisma.blogPost.update({
+      where: { id },
+      data: {
+        viewCount: newViews,
+        likeCount: newLikes,
+      },
+      include: { images: true },
+    });
+
+    res.json(updated);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to update blog stats' });
   }
 };

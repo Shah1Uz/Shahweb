@@ -371,6 +371,10 @@ export const getDashboardStats = async (_req: AuthRequest, res: Response): Promi
       totalMedia,
       mediaSizeAgg,
       recentActivity,
+      projectStatsAgg,
+      blogStatsAgg,
+      topProjects,
+      topBlogPosts,
     ] = await Promise.all([
       prisma.project.count(),
       prisma.project.count({ where: { status: 'PUBLISHED' } }),
@@ -389,7 +393,24 @@ export const getDashboardStats = async (_req: AuthRequest, res: Response): Promi
         take: 10,
         orderBy: { createdAt: 'desc' },
       }),
+      prisma.project.aggregate({ _sum: { viewCount: true, likeCount: true } }),
+      prisma.blogPost.aggregate({ _sum: { viewCount: true, likeCount: true } }),
+      prisma.project.findMany({
+        take: 5,
+        orderBy: [{ likeCount: 'desc' }, { viewCount: 'desc' }],
+        select: { id: true, title: true, slug: true, coverImage: true, viewCount: true, likeCount: true, category: true },
+      }),
+      prisma.blogPost.findMany({
+        take: 5,
+        orderBy: [{ likeCount: 'desc' }, { viewCount: 'desc' }],
+        select: { id: true, title: true, slug: true, coverImage: true, viewCount: true, likeCount: true, category: true },
+      }),
     ]);
+
+    const totalProjectViews = projectStatsAgg._sum.viewCount || 0;
+    const totalProjectLikes = projectStatsAgg._sum.likeCount || 0;
+    const totalBlogViews = blogStatsAgg._sum.viewCount || 0;
+    const totalBlogLikes = blogStatsAgg._sum.likeCount || 0;
 
     res.json({
       counts: {
@@ -416,7 +437,17 @@ export const getDashboardStats = async (_req: AuthRequest, res: Response): Promi
           total: totalMedia,
           totalBytes: mediaSizeAgg._sum.size || 0,
         },
+        engagement: {
+          totalViews: totalProjectViews + totalBlogViews,
+          totalLikes: totalProjectLikes + totalBlogLikes,
+          projectViews: totalProjectViews,
+          projectLikes: totalProjectLikes,
+          blogViews: totalBlogViews,
+          blogLikes: totalBlogLikes,
+        },
       },
+      topProjects,
+      topBlogPosts,
       recentActivity,
     });
   } catch (error: any) {

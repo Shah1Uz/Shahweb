@@ -6,6 +6,7 @@ import { Project } from '../../types';
 import { ImageCarousel } from '../../components/public/ImageCarousel';
 import { MarkdownRenderer } from '../../components/ui/MarkdownRenderer';
 import { Badge } from '../../components/ui/Badge';
+import { ReactionButton } from '../../components/public/ReactionButton';
 
 export const ProjectDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -75,14 +76,23 @@ export const ProjectDetail: React.FC = () => {
 
       {/* Hero Header */}
       <div className="space-y-4 max-w-4xl">
-        <div className="flex items-center gap-3">
-          <Badge variant="white">{project.category}</Badge>
-          {project.date && (
-            <span className="text-xs font-mono text-[#9d9f9e] flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              {project.date}
-            </span>
-          )}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Badge variant="white">{project.category}</Badge>
+            {project.date && (
+              <span className="text-xs font-mono text-[#9d9f9e] flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                {project.date}
+              </span>
+            )}
+          </div>
+          <ReactionButton
+            id={project.id}
+            type="project"
+            initialLikes={project.likeCount}
+            initialViews={project.viewCount}
+            size="md"
+          />
         </div>
         <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
           {project.title}
@@ -128,8 +138,21 @@ export const ProjectDetail: React.FC = () => {
           )}
 
           {/* Full Markdown Case Study */}
-          <div className="p-8 rounded-3xl glass-card border border-[#343636] bg-[#191a1a]">
+          <div className="p-8 rounded-3xl glass-card border border-[#343636] bg-[#191a1a] space-y-8">
             <MarkdownRenderer content={project.fullDesc} />
+
+            <div className="pt-6 border-t border-[#343636] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <p className="text-xs font-mono font-bold text-white">Yoqdimi? Reaksiya qoldiring!</p>
+                <p className="text-[11px] text-[#9d9f9e]">Loyiha arxitekturasi va yechimiga baxo bering</p>
+              </div>
+              <ReactionButton
+                id={project.id}
+                type="project"
+                initialLikes={project.likeCount}
+                size="lg"
+              />
+            </div>
           </div>
         </div>
 

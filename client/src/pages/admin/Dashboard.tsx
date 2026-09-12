@@ -11,6 +11,9 @@ import {
   Activity,
   ArrowUpRight,
   Sparkles,
+  Eye,
+  Heart,
+  Flame,
 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { DashboardStats } from '../../types';
@@ -60,6 +63,45 @@ export const Dashboard: React.FC = () => {
             <Clock className="w-4 h-4" />
             <span>Schedule News</span>
           </Link>
+        </div>
+      </div>
+
+      {/* Global Engagement Banner */}
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#d6f779]/15 via-cyan-500/10 to-indigo-500/10 border border-[#343636] flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-[#d6f779] flex items-center justify-center shadow-lg shadow-[#d6f779]/30 shrink-0">
+            <Flame className="w-6 h-6 text-[#101111]" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <span>Audience Traffic & Reactions</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-md font-mono bg-[#d6f779]/20 text-[#d6f779] font-bold">LIVE TELEMETRY</span>
+            </h2>
+            <p className="text-xs text-[#9d9f9e]">
+              Real visitor impressions, project interest and community reactions
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-6 sm:gap-8 shrink-0">
+          <div className="text-center sm:text-right">
+            <span className="text-[10px] font-mono text-[#9d9f9e] uppercase tracking-wider flex items-center gap-1 justify-center sm:justify-end">
+              <Eye className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Total Views</span>
+            </span>
+            <span className="text-2xl sm:text-3xl font-extrabold font-mono text-white">
+              {(counts?.engagement?.totalViews || 0).toLocaleString()}
+            </span>
+          </div>
+          <div className="w-px h-10 bg-[#343636]" />
+          <div className="text-center sm:text-right">
+            <span className="text-[10px] font-mono text-[#9d9f9e] uppercase tracking-wider flex items-center gap-1 justify-center sm:justify-end">
+              <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-500" />
+              <span>Total Reactions</span>
+            </span>
+            <span className="text-2xl sm:text-3xl font-extrabold font-mono text-[#d6f779]">
+              {(counts?.engagement?.totalLikes || 0).toLocaleString()}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -226,6 +268,97 @@ export const Dashboard: React.FC = () => {
                 <ArrowUpRight className="w-3.5 h-3.5 text-gray-500" />
               </Link>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TOP ENGAGED PROJECTS & ARTICLES */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Top Projects */}
+        <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-white/10 space-y-4">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <h3 className="font-bold text-white text-base flex items-center gap-2">
+              <FolderGit2 className="w-4 h-4 text-cyan-400" />
+              <span>Top Viewed & Liked Projects</span>
+            </h3>
+            <Link to="/admin/projects" className="text-xs font-mono text-cyan-400 hover:underline">
+              View All →
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            {stats?.topProjects && stats.topProjects.length > 0 ? (
+              stats.topProjects.map((p, idx) => (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 hover:border-cyan-500/30 transition-all text-xs"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-5 h-5 rounded-lg bg-cyan-500/10 text-cyan-300 font-mono font-bold text-[10px] flex items-center justify-center shrink-0">
+                      #{idx + 1}
+                    </span>
+                    <img src={p.coverImage} alt="" className="w-10 h-7 rounded-md object-cover bg-gray-900 shrink-0" />
+                    <span className="font-semibold text-white truncate">{p.title}</span>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0 font-mono text-[11px]">
+                    <span className="flex items-center gap-1 text-cyan-300">
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>{p.viewCount || 0}</span>
+                    </span>
+                    <span className="flex items-center gap-1 text-rose-400">
+                      <Heart className="w-3.5 h-3.5 fill-rose-500/30" />
+                      <span>{p.likeCount || 0}</span>
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-gray-500 py-4 text-center">No project statistics recorded yet.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Top Blog Posts */}
+        <div className="p-6 sm:p-8 rounded-3xl glass-panel border border-white/10 space-y-4">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <h3 className="font-bold text-white text-base flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-emerald-400" />
+              <span>Top Read & Liked Articles</span>
+            </h3>
+            <Link to="/admin/blog" className="text-xs font-mono text-emerald-400 hover:underline">
+              View All →
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            {stats?.topBlogPosts && stats.topBlogPosts.length > 0 ? (
+              stats.topBlogPosts.map((b, idx) => (
+                <div
+                  key={b.id}
+                  className="flex items-center justify-between p-3.5 rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/30 transition-all text-xs"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-5 h-5 rounded-lg bg-emerald-500/10 text-emerald-300 font-mono font-bold text-[10px] flex items-center justify-center shrink-0">
+                      #{idx + 1}
+                    </span>
+                    <img src={b.coverImage} alt="" className="w-10 h-7 rounded-md object-cover bg-gray-900 shrink-0" />
+                    <span className="font-semibold text-white truncate">{b.title}</span>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0 font-mono text-[11px]">
+                    <span className="flex items-center gap-1 text-cyan-300">
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>{b.viewCount || 0}</span>
+                    </span>
+                    <span className="flex items-center gap-1 text-rose-400">
+                      <Heart className="w-3.5 h-3.5 fill-rose-500/30" />
+                      <span>{b.likeCount || 0}</span>
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-gray-500 py-4 text-center">No article statistics recorded yet.</p>
+            )}
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Clock, ArrowRight, BookOpen, User, X } from 'lucide-react';
+import { Search, Clock, ArrowRight, BookOpen, User, X, Eye, Heart } from 'lucide-react';
 import { api } from '../../lib/api';
 import { BlogPost } from '../../types';
 import { Badge } from '../../components/ui/Badge';
@@ -110,6 +110,17 @@ export const Blog: React.FC = () => {
                   <div className="absolute top-3 left-3">
                     <Badge variant="white">{post.category}</Badge>
                   </div>
+                  <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#101111]/80 backdrop-blur-md border border-[#343636] text-[10px] font-mono text-white">
+                    <span className="flex items-center gap-1 text-cyan-300">
+                      <Eye className="w-3 h-3" />
+                      <span>{post.viewCount || 0}</span>
+                    </span>
+                    <span className="text-gray-600">•</span>
+                    <span className="flex items-center gap-1 text-rose-400">
+                      <Heart className="w-3 h-3 fill-rose-500/30" />
+                      <span>{post.likeCount || 0}</span>
+                    </span>
+                  </div>
                 </div>
 
                 <div className="p-8 flex-1 flex flex-col justify-between space-y-4">
@@ -154,7 +165,16 @@ export const Blog: React.FC = () => {
                       <span>Read Article</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
-                    <span className="text-xs font-mono text-[#9d9f9e]">{post.viewCount} views</span>
+                    <div className="flex items-center gap-3 text-xs font-mono text-[#9d9f9e]">
+                      <span className="flex items-center gap-1 text-cyan-400">
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>{post.viewCount || 0}</span>
+                      </span>
+                      <span className="flex items-center gap-1 text-rose-400">
+                        <Heart className="w-3.5 h-3.5 fill-rose-500/30" />
+                        <span>{post.likeCount || 0}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

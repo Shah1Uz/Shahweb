@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, ExternalLink, BookOpen, Upload, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, ExternalLink, BookOpen, Upload, Eye, Heart } from 'lucide-react';
 import { api } from '../../lib/api';
 import { BlogPost } from '../../types';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 import { MarkdownRenderer } from '../../components/ui/MarkdownRenderer';
+import { StatsModal } from '../../components/admin/StatsModal';
 
 export const BlogAdmin: React.FC = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -12,6 +13,8 @@ export const BlogAdmin: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const [statsModalOpen, setStatsModalOpen] = useState(false);
+  const [statsPost, setStatsPost] = useState<BlogPost | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
 
@@ -199,7 +202,7 @@ export const BlogAdmin: React.FC = () => {
                 <th className="p-4">Category</th>
                 <th className="p-4">Status</th>
                 <th className="p-4">Reading Time</th>
-                <th className="p-4">Views</th>
+                <th className="p-4">Reactions & Views</th>
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -239,7 +242,27 @@ export const BlogAdmin: React.FC = () => {
                       </span>
                     </td>
                     <td className="p-4 text-gray-400 font-mono">{post.readingTime}</td>
-                    <td className="p-4 text-gray-400 font-mono">{post.viewCount}</td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => {
+                          setStatsPost(post);
+                          setStatsModalOpen(true);
+                        }}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-400/50 transition-all font-mono text-[11px] group"
+                        title="Reaksiyalar va ko'rishlar sonini o'zgartirish (+/-)"
+                      >
+                        <span className="flex items-center gap-1 text-cyan-300">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>{post.viewCount || 0}</span>
+                        </span>
+                        <span className="text-gray-600">•</span>
+                        <span className="flex items-center gap-1 text-rose-400">
+                          <Heart className="w-3.5 h-3.5 fill-rose-500/30" />
+                          <span>{post.likeCount || 0}</span>
+                        </span>
+                        <span className="text-[10px] text-gray-400 group-hover:text-emerald-300 font-bold ml-0.5">±</span>
+                      </button>
+                    </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <a
@@ -460,6 +483,31 @@ export const BlogAdmin: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      {/* STATS & REACTIONS MODAL */}
+      {statsPost && (
+        <StatsModal
+          isOpen={statsModalOpen}
+          onClose={() => {
+            setStatsModalOpen(false);
+            setStatsPost(null);
+          }}
+          title={statsPost.title}
+          type="blog"
+          itemId={statsPost.id}
+          initialViews={statsPost.viewCount || 0}
+          initialLikes={statsPost.likeCount || 0}
+          onSuccess={(newViews, newLikes) => {
+            setPosts((prev) =>
+              prev.map((p) =>
+                p.id === statsPost.id
+                  ? { ...p, viewCount: newViews, likeCount: newLikes }
+                  : p
+              )
+            );
+          }}
+        />
+      )}
     </div>
   );
 };

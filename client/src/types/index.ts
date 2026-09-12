@@ -52,6 +52,8 @@ export interface Project {
   status: 'DRAFT' | 'PUBLISHED' | 'SCHEDULED' | 'ARCHIVED';
   scheduledAt?: string | null;
   sortOrder: number;
+  viewCount: number;
+  likeCount: number;
   createdAt: string;
   updatedAt: string;
   images?: ProjectImage[];
@@ -82,6 +84,7 @@ export interface News {
   scheduledAt?: string | null;
   expiresAt?: string | null;
   viewCount: number;
+  likeCount: number;
   createdAt: string;
   updatedAt: string;
   images?: NewsImage[];
@@ -117,6 +120,7 @@ export interface BlogPost {
   scheduledAt?: string | null;
   publishedAt?: string | null;
   viewCount: number;
+  likeCount: number;
   createdAt: string;
   updatedAt: string;
   images?: BlogImage[];
@@ -247,7 +251,33 @@ export interface DashboardStats {
     blog: { total: number; published: number };
     messages: { total: number; unread: number };
     media: { total: number; totalBytes: number };
+    engagement?: {
+      totalViews: number;
+      totalLikes: number;
+      projectViews: number;
+      projectLikes: number;
+      blogViews: number;
+      blogLikes: number;
+    };
   };
+  topProjects?: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    coverImage: string;
+    viewCount: number;
+    likeCount: number;
+    category: string;
+  }>;
+  topBlogPosts?: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    coverImage: string;
+    viewCount: number;
+    likeCount: number;
+    category: string;
+  }>;
   recentActivity: Array<{
     id: string;
     action: string;
