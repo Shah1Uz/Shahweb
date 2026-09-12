@@ -139,7 +139,7 @@ export const replyToMessage = async (req: AuthRequest, res: Response): Promise<v
     const subject = replySubject?.trim() || `Re: ${message.subject}`;
 
     // Send the email via Nodemailer
-    await sendReplyEmail({
+    const result = await sendReplyEmail({
       toEmail: message.email,
       toName: message.name,
       subject,
@@ -159,9 +159,19 @@ export const replyToMessage = async (req: AuthRequest, res: Response): Promise<v
       },
     });
 
+    if (result.isTest) {
+      res.json({
+        message: 'Xat saqlandi. Ammo serverda SMTP_PASS sozlanmagani uchun test rejimida saqlab qolindi. Real xat pochtaga borishi uchun Render Environment sozlamalariga SMTP_PASS ni qo\'shing.',
+        contactMessage: updated,
+        isTest: true,
+      });
+      return;
+    }
+
     res.json({
-      message: 'Javob xati muvaffaqiyatli yuborildi',
+      message: 'Javob xati mijozning elektron pochtasiga muvaffaqiyatli yetkazildi!',
       contactMessage: updated,
+      isTest: false,
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Javob yuborishda xatolik yuz berdi' });

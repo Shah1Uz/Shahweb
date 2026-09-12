@@ -104,7 +104,11 @@ export const MessagesAdmin: React.FC = () => {
         replySubject,
         replyText,
       });
-      success('Javob xati mijozning elektron pochtasiga yuborildi!');
+      if (res.data.isTest) {
+        error(res.data.message);
+      } else {
+        success(res.data.message || 'Javob xati mijozning elektron pochtasiga yetkazildi!');
+      }
       setReplyOpen(false);
       setReplyText('');
       if (res.data.contactMessage) {
