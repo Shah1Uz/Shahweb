@@ -227,6 +227,9 @@ export interface ContactMessage {
   message: string;
   isRead: boolean;
   isArchived: boolean;
+  replyText?: string | null;
+  replySent?: boolean;
+  repliedAt?: string | null;
   createdAt: string;
 }
 

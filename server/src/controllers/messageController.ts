@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config';
 import { AuthRequest } from '../middleware/authMiddleware';
+import { sendReplyEmail } from '../services/emailService';
 
 export const submitMessage = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -116,5 +117,53 @@ export const deleteMessage = async (req: AuthRequest, res: Response): Promise<vo
     res.json({ message: 'Message deleted successfully' });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to delete message' });
+  }
+};
+
+export const replyToMessage = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { replySubject, replyText } = req.body;
+
+    if (!replyText || !replyText.trim()) {
+      res.status(400).json({ error: 'Javob matni (replyText) kiritilishi shart' });
+      return;
+    }
+
+    const message = await prisma.contactMessage.findUnique({ where: { id } });
+    if (!message) {
+      res.status(404).json({ error: 'Xabar topilmadi' });
+      return;
+    }
+
+    const subject = replySubject?.trim() || `Re: ${message.subject}`;
+
+    // Send the email via Nodemailer
+    await sendReplyEmail({
+      toEmail: message.email,
+      toName: message.name,
+      subject,
+      replyText: replyText.trim(),
+      originalSubject: message.subject,
+      originalMessage: message.message,
+    });
+
+    // Update the database record
+    const updated = await prisma.contactMessage.update({
+      where: { id },
+      data: {
+        isRead: true,
+        replySent: true,
+        replyText: replyText.trim(),
+        repliedAt: new Date(),
+      },
+    });
+
+    res.json({
+      message: 'Javob xati muvaffaqiyatli yuborildi',
+      contactMessage: updated,
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Javob yuborishda xatolik yuz berdi' });
   }
 };

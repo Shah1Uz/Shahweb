@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteMessage = exports.updateMessageStatus = exports.getMessages = exports.submitMessage = void 0;
+exports.replyToMessage = exports.deleteMessage = exports.updateMessageStatus = exports.getMessages = exports.submitMessage = void 0;
 const config_1 = require("../config");
+const emailService_1 = require("../services/emailService");
 const submitMessage = async (req, res) => {
     try {
         const { name, email, subject, message } = req.body;
@@ -114,3 +115,46 @@ const deleteMessage = async (req, res) => {
     }
 };
 exports.deleteMessage = deleteMessage;
+const replyToMessage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { replySubject, replyText } = req.body;
+        if (!replyText || !replyText.trim()) {
+            res.status(400).json({ error: 'Javob matni (replyText) kiritilishi shart' });
+            return;
+        }
+        const message = await config_1.prisma.contactMessage.findUnique({ where: { id } });
+        if (!message) {
+            res.status(404).json({ error: 'Xabar topilmadi' });
+            return;
+        }
+        const subject = replySubject?.trim() || `Re: ${message.subject}`;
+        // Send the email via Nodemailer
+        await (0, emailService_1.sendReplyEmail)({
+            toEmail: message.email,
+            toName: message.name,
+            subject,
+            replyText: replyText.trim(),
+            originalSubject: message.subject,
+            originalMessage: message.message,
+        });
+        // Update the database record
+        const updated = await config_1.prisma.contactMessage.update({
+            where: { id },
+            data: {
+                isRead: true,
+                replySent: true,
+                replyText: replyText.trim(),
+                repliedAt: new Date(),
+            },
+        });
+        res.json({
+            message: 'Javob xati muvaffaqiyatli yuborildi',
+            contactMessage: updated,
+        });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message || 'Javob yuborishda xatolik yuz berdi' });
+    }
+};
+exports.replyToMessage = replyToMessage;
