@@ -119,6 +119,7 @@ const createProject = async (req, res) => {
                 status: status || 'PUBLISHED',
                 scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
                 sortOrder: sortOrder ? parseInt(sortOrder, 10) : 0,
+                beforeAfterJson: req.body.beforeAfterJson ? (typeof req.body.beforeAfterJson === 'string' ? req.body.beforeAfterJson : JSON.stringify(req.body.beforeAfterJson)) : null,
                 images: images && Array.isArray(images)
                     ? {
                         create: images.map((img, idx) => ({
@@ -196,6 +197,7 @@ const updateProject = async (req, res) => {
                 sortOrder: sortOrder !== undefined ? parseInt(sortOrder, 10) : undefined,
                 viewCount: req.body.viewCount !== undefined ? Math.max(0, parseInt(req.body.viewCount, 10)) : undefined,
                 likeCount: req.body.likeCount !== undefined ? Math.max(0, parseInt(req.body.likeCount, 10)) : undefined,
+                beforeAfterJson: req.body.beforeAfterJson !== undefined ? (typeof req.body.beforeAfterJson === 'string' ? req.body.beforeAfterJson : JSON.stringify(req.body.beforeAfterJson)) : undefined,
             },
             include: { images: true },
         });

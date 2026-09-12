@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, Github, Calendar, UserCheck, Tag, Music, Video } from 'lucide-react';
 import { api } from '../../lib/api';
-import { Project } from '../../types';
+import { Project, BeforeAfterConfig } from '../../types';
 import { ImageCarousel } from '../../components/public/ImageCarousel';
 import { MarkdownRenderer } from '../../components/ui/MarkdownRenderer';
 import { Badge } from '../../components/ui/Badge';
 import { ReactionButton } from '../../components/public/ReactionButton';
+import { BeforeAfterSlider } from '../../components/public/BeforeAfterSlider';
 
 export const ProjectDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -57,6 +58,15 @@ export const ProjectDetail: React.FC = () => {
     techs = JSON.parse(project.technologies);
   } catch {
     techs = project.technologies.split(',').map((t) => t.trim());
+  }
+
+  let beforeAfterConfig: BeforeAfterConfig | null = null;
+  if (project.beforeAfterJson) {
+    try {
+      beforeAfterConfig = JSON.parse(project.beforeAfterJson);
+    } catch {
+      beforeAfterConfig = null;
+    }
   }
 
   const carouselImages = project.images && project.images.length > 0
@@ -135,6 +145,11 @@ export const ProjectDetail: React.FC = () => {
                 <audio src={project.audioUrl} controls className="w-full mt-2 h-8" />
               </div>
             </div>
+          )}
+
+          {/* Before & After Architecture / Code Comparison */}
+          {beforeAfterConfig && beforeAfterConfig.enabled && (
+            <BeforeAfterSlider config={beforeAfterConfig} />
           )}
 
           {/* Full Markdown Case Study */}

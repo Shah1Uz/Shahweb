@@ -12,9 +12,12 @@ import {
   Image as ImageIcon,
   Eye,
   Heart,
+  ArrowLeftRight,
+  Code2,
+  Sliders,
 } from 'lucide-react';
 import { api } from '../../lib/api';
-import { Project } from '../../types';
+import { Project, BeforeAfterConfig } from '../../types';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/Toast';
 import { Badge } from '../../components/ui/Badge';
@@ -49,6 +52,7 @@ export const ProjectsAdmin: React.FC = () => {
     featured: boolean;
     status: 'DRAFT' | 'PUBLISHED' | 'SCHEDULED' | 'ARCHIVED';
     images: Array<{ url: string; caption?: string }>;
+    beforeAfter: BeforeAfterConfig;
   }>({
     title: '',
     slug: '',
@@ -66,6 +70,19 @@ export const ProjectsAdmin: React.FC = () => {
     featured: false,
     status: 'PUBLISHED',
     images: [],
+    beforeAfter: {
+      enabled: false,
+      type: 'image',
+      title: 'Architecture & Performance Evolution',
+      metricBadge: '⚡ 60% Latency Drop',
+      beforeLabel: 'Legacy Monolith / Slow',
+      afterLabel: 'Edge Scalable Architecture',
+      beforeImage: '',
+      afterImage: '',
+      beforeCode: '',
+      afterCode: '',
+      language: 'typescript',
+    },
   });
 
   const { success, error } = useToast();
@@ -102,6 +119,19 @@ export const ProjectsAdmin: React.FC = () => {
       featured: false,
       status: 'PUBLISHED',
       images: [],
+      beforeAfter: {
+        enabled: false,
+        type: 'image',
+        title: 'Architecture & Performance Evolution',
+        metricBadge: '⚡ 60% Latency Drop',
+        beforeLabel: 'Legacy Monolith / Slow',
+        afterLabel: 'Edge Scalable Architecture',
+        beforeImage: '',
+        afterImage: '',
+        beforeCode: '',
+        afterCode: '',
+        language: 'typescript',
+      },
     });
     setModalOpen(true);
   };
@@ -113,6 +143,26 @@ export const ProjectsAdmin: React.FC = () => {
       const parsed = JSON.parse(p.technologies);
       if (Array.isArray(parsed)) techString = parsed.join(', ');
     } catch {}
+
+    let initialBeforeAfter: BeforeAfterConfig = {
+      enabled: false,
+      type: 'image',
+      title: 'Architecture & Performance Evolution',
+      metricBadge: '⚡ 60% Latency Drop',
+      beforeLabel: 'Legacy Monolith / Slow',
+      afterLabel: 'Edge Scalable Architecture',
+      beforeImage: '',
+      afterImage: '',
+      beforeCode: '',
+      afterCode: '',
+      language: 'typescript',
+    };
+    if (p.beforeAfterJson) {
+      try {
+        const parsed = JSON.parse(p.beforeAfterJson);
+        initialBeforeAfter = { ...initialBeforeAfter, ...parsed };
+      } catch {}
+    }
 
     setForm({
       id: p.id,
@@ -132,6 +182,7 @@ export const ProjectsAdmin: React.FC = () => {
       featured: p.featured,
       status: p.status,
       images: p.images ? p.images.map((img) => ({ url: img.url, caption: img.caption || '' })) : [],
+      beforeAfter: initialBeforeAfter,
     });
     setModalOpen(true);
   };
@@ -180,6 +231,31 @@ export const ProjectsAdmin: React.FC = () => {
     }
   };
 
+  const handleBeforeAfterImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'beforeImage' | 'afterImage') => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const formData = new FormData();
+    formData.append('files', files[0]);
+    try {
+      const res = await api.post('/media/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const uploaded = res.data.media;
+      if (uploaded && uploaded.length > 0) {
+        setForm((prev) => ({
+          ...prev,
+          beforeAfter: {
+            ...prev.beforeAfter,
+            [field]: uploaded[0].url,
+          },
+        }));
+        success(`${field === 'beforeImage' ? 'Before' : 'After'} image uploaded!`);
+      }
+    } catch (err: any) {
+      error(err.message || 'Media upload failed');
+    }
+  };
+
   const addImageUrl = () => {
     const url = prompt('Enter image URL:');
     if (url) {
@@ -206,6 +282,7 @@ export const ProjectsAdmin: React.FC = () => {
     const payload = {
       ...form,
       technologies: JSON.stringify(techArray),
+      beforeAfterJson: JSON.stringify(form.beforeAfter),
     };
 
     try {
@@ -621,6 +698,256 @@ export const ProjectsAdmin: React.FC = () => {
                 className="w-full glass-input rounded-xl px-4 py-2 text-xs font-mono"
               />
             </div>
+          </div>
+
+          {/* Before & After Architecture Slider */}
+          <div className="space-y-4 pt-4 border-t border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <ArrowLeftRight className="w-4 h-4 text-[#d6f779]" />
+                <h4 className="text-xs font-mono uppercase tracking-widest text-[#d6f779] font-bold">
+                  Before & After Architecture Slider
+                </h4>
+              </div>
+              <label className="flex items-center gap-2 text-xs font-mono text-gray-200 cursor-pointer px-3 py-1.5 rounded-lg border border-[#d6f779]/30 bg-[#d6f779]/10 hover:bg-[#d6f779]/20 transition-all">
+                <input
+                  type="checkbox"
+                  checked={form.beforeAfter.enabled}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      beforeAfter: { ...prev.beforeAfter, enabled: e.target.checked },
+                    }))
+                  }
+                  className="rounded text-[#d6f779] focus:ring-0"
+                />
+                <span className="font-semibold">Enable Comparison Slider</span>
+              </label>
+            </div>
+
+            {form.beforeAfter.enabled && (
+              <div className="p-4 rounded-2xl bg-black/40 border border-white/10 space-y-4">
+                {/* Comparison Mode Selector */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-gray-400">Comparison Mode:</span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          beforeAfter: { ...prev.beforeAfter, type: 'image' },
+                        }))
+                      }
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-all ${
+                        form.beforeAfter.type === 'image'
+                          ? 'bg-[#d6f779] text-black font-bold shadow-md shadow-[#d6f779]/20'
+                          : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'
+                      }`}
+                    >
+                      <ImageIcon className="w-3.5 h-3.5" />
+                      <span>Visual / UI (Images)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((prev) => ({
+                          ...prev,
+                          beforeAfter: { ...prev.beforeAfter, type: 'code' },
+                        }))
+                      }
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-all ${
+                        form.beforeAfter.type === 'code'
+                          ? 'bg-[#d6f779] text-black font-bold shadow-md shadow-[#d6f779]/20'
+                          : 'bg-white/5 text-gray-400 hover:text-white border border-white/10'
+                      }`}
+                    >
+                      <Code2 className="w-3.5 h-3.5" />
+                      <span>Code Comparison (Old vs New)</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Section Title & Metric Badge */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-mono text-gray-300">Slider Title</label>
+                    <input
+                      type="text"
+                      value={form.beforeAfter.title || ''}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          beforeAfter: { ...prev.beforeAfter, title: e.target.value },
+                        }))
+                      }
+                      placeholder="e.g. Architecture & Performance Evolution"
+                      className="w-full glass-input rounded-xl px-4 py-2 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-mono text-gray-300">Metric / Achievement Badge</label>
+                    <input
+                      type="text"
+                      value={form.beforeAfter.metricBadge || ''}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          beforeAfter: { ...prev.beforeAfter, metricBadge: e.target.value },
+                        }))
+                      }
+                      placeholder="e.g. ⚡ 3.4s → 85ms Query Time (-97%)"
+                      className="w-full glass-input rounded-xl px-4 py-2 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* Labels: Before vs After */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-mono text-rose-300">Before Label (Old / Legacy)</label>
+                    <input
+                      type="text"
+                      value={form.beforeAfter.beforeLabel}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          beforeAfter: { ...prev.beforeAfter, beforeLabel: e.target.value },
+                        }))
+                      }
+                      placeholder="Legacy Monolith / Slow"
+                      className="w-full glass-input rounded-xl px-4 py-2 text-xs border-rose-500/30 focus:border-rose-400"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-mono text-[#d6f779]">After Label (New / Optimized)</label>
+                    <input
+                      type="text"
+                      value={form.beforeAfter.afterLabel}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          beforeAfter: { ...prev.beforeAfter, afterLabel: e.target.value },
+                        }))
+                      }
+                      placeholder="Edge Scalable Architecture"
+                      className="w-full glass-input rounded-xl px-4 py-2 text-xs border-[#d6f779]/30 focus:border-[#d6f779]"
+                    />
+                  </div>
+                </div>
+
+                {/* Image Mode Inputs */}
+                {form.beforeAfter.type === 'image' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-mono text-gray-300">Before Image URL (Old State)</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={form.beforeAfter.beforeImage || ''}
+                          onChange={(e) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              beforeAfter: { ...prev.beforeAfter, beforeImage: e.target.value },
+                            }))
+                          }
+                          placeholder="https://.../old-ui.png"
+                          className="flex-1 glass-input rounded-xl px-4 py-2 text-xs"
+                        />
+                        <label className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 cursor-pointer flex items-center gap-1 text-xs">
+                          <Upload className="w-3.5 h-3.5" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleBeforeAfterImageUpload(e, 'beforeImage')}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-mono text-gray-300">After Image URL (New State)</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={form.beforeAfter.afterImage || ''}
+                          onChange={(e) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              beforeAfter: { ...prev.beforeAfter, afterImage: e.target.value },
+                            }))
+                          }
+                          placeholder="https://.../new-ui.png"
+                          className="flex-1 glass-input rounded-xl px-4 py-2 text-xs"
+                        />
+                        <label className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 cursor-pointer flex items-center gap-1 text-xs">
+                          <Upload className="w-3.5 h-3.5" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleBeforeAfterImageUpload(e, 'afterImage')}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Code Mode Inputs */}
+                {form.beforeAfter.type === 'code' && (
+                  <div className="space-y-3 pt-2">
+                    <div className="space-y-1.5 max-w-xs">
+                      <label className="text-xs font-mono text-gray-300">Programming / Markup Language</label>
+                      <input
+                        type="text"
+                        value={form.beforeAfter.language || 'typescript'}
+                        onChange={(e) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            beforeAfter: { ...prev.beforeAfter, language: e.target.value },
+                          }))
+                        }
+                        placeholder="e.g. typescript, sql, python, rust"
+                        className="w-full glass-input rounded-xl px-4 py-2 text-xs font-mono"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-mono text-rose-300">Before Code (Legacy / Inefficient)</label>
+                        <textarea
+                          rows={8}
+                          value={form.beforeAfter.beforeCode || ''}
+                          onChange={(e) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              beforeAfter: { ...prev.beforeAfter, beforeCode: e.target.value },
+                            }))
+                          }
+                          placeholder="// Legacy monolith code or heavy synchronous SQL query..."
+                          className="w-full glass-input rounded-xl px-4 py-2.5 text-xs font-mono bg-black/60 text-rose-200 border-rose-500/20"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-mono text-[#d6f779]">After Code (Optimized / Modern)</label>
+                        <textarea
+                          rows={8}
+                          value={form.beforeAfter.afterCode || ''}
+                          onChange={(e) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              beforeAfter: { ...prev.beforeAfter, afterCode: e.target.value },
+                            }))
+                          }
+                          placeholder="// Modern asynchronous edge code with Redis cache & streaming..."
+                          className="w-full glass-input rounded-xl px-4 py-2.5 text-xs font-mono bg-black/60 text-emerald-200 border-emerald-500/20"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Footer Submit Buttons */}

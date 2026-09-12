@@ -54,9 +54,24 @@ export interface Project {
   sortOrder: number;
   viewCount: number;
   likeCount: number;
+  beforeAfterJson?: string | null;
   createdAt: string;
   updatedAt: string;
   images?: ProjectImage[];
+}
+
+export interface BeforeAfterConfig {
+  enabled: boolean;
+  type: 'image' | 'code';
+  title?: string;
+  metricBadge?: string;
+  beforeLabel: string;
+  afterLabel: string;
+  beforeImage?: string;
+  afterImage?: string;
+  beforeCode?: string;
+  afterCode?: string;
+  language?: string;
 }
 
 export interface NewsImage {
