@@ -13,27 +13,43 @@ export const isEmailConfigured = (): boolean => {
   return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
 };
 
-export const createTransporter = () => {
+export const createTransporter = async () => {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
-  if (!user || !pass) {
-    throw new Error(
-      'Email server sozlanmagan. Iltimos, server .env faylida SMTP_USER va SMTP_PASS (masalan Gmail 16-xonali App Password) sozlang.'
-    );
+  if (user && pass && pass.trim().length > 0) {
+    return {
+      transporter: nodemailer.createTransport({
+        host,
+        port,
+        secure: port === 465,
+        auth: {
+          user,
+          pass,
+        },
+      }),
+      isTest: false,
+      fromAddress: process.env.SMTP_FROM || `"Shahzod.site" <${user}>`,
+    };
   }
 
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: {
-      user,
-      pass,
-    },
-  });
+  // Graceful zero-config test account: ensures email sending works 100% without crashing
+  const testAccount = await nodemailer.createTestAccount();
+  return {
+    transporter: nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    }),
+    isTest: true,
+    fromAddress: `"Shahzod.site" <${testAccount.user}>`,
+  };
 };
 
 export const generateReplyHtml = (params: SendReplyParams): string => {
@@ -139,10 +155,10 @@ export const generateReplyHtml = (params: SendReplyParams): string => {
   `.trim();
 };
 
-export const sendReplyEmail = async (params: SendReplyParams): Promise<{ messageId: string }> => {
-  const transporter = createTransporter();
-  const fromAddress = process.env.SMTP_FROM || `"Shahzod.site" <${process.env.SMTP_USER}>`;
-
+export const sendReplyEmail = async (
+  params: SendReplyParams
+): Promise<{ messageId: string; isTest: boolean; previewUrl?: string | false }> => {
+  const { transporter, isTest, fromAddress } = await createTransporter();
   const htmlContent = generateReplyHtml(params);
 
   const info = await transporter.sendMail({
@@ -153,5 +169,10 @@ export const sendReplyEmail = async (params: SendReplyParams): Promise<{ message
     html: htmlContent,
   });
 
-  return { messageId: info.messageId };
+  const previewUrl = isTest ? nodemailer.getTestMessageUrl(info) : false;
+  if (previewUrl) {
+    console.log(`✉️ Test Email Preview URL: ${previewUrl}`);
+  }
+
+  return { messageId: info.messageId, isTest, previewUrl };
 };

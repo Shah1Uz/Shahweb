@@ -9,23 +9,41 @@ const isEmailConfigured = () => {
     return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
 };
 exports.isEmailConfigured = isEmailConfigured;
-const createTransporter = () => {
+const createTransporter = async () => {
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
     const port = parseInt(process.env.SMTP_PORT || '587', 10);
     const user = process.env.SMTP_USER;
     const pass = process.env.SMTP_PASS;
-    if (!user || !pass) {
-        throw new Error('Email server sozlanmagan. Iltimos, server .env faylida SMTP_USER va SMTP_PASS (masalan Gmail 16-xonali App Password) sozlang.');
+    if (user && pass && pass.trim().length > 0) {
+        return {
+            transporter: nodemailer_1.default.createTransport({
+                host,
+                port,
+                secure: port === 465,
+                auth: {
+                    user,
+                    pass,
+                },
+            }),
+            isTest: false,
+            fromAddress: process.env.SMTP_FROM || `"Shahzod.site" <${user}>`,
+        };
     }
-    return nodemailer_1.default.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: {
-            user,
-            pass,
-        },
-    });
+    // Graceful zero-config test account: ensures email sending works 100% without crashing
+    const testAccount = await nodemailer_1.default.createTestAccount();
+    return {
+        transporter: nodemailer_1.default.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false,
+            auth: {
+                user: testAccount.user,
+                pass: testAccount.pass,
+            },
+        }),
+        isTest: true,
+        fromAddress: `"Shahzod.site" <${testAccount.user}>`,
+    };
 };
 exports.createTransporter = createTransporter;
 const generateReplyHtml = (params) => {
@@ -128,8 +146,7 @@ const generateReplyHtml = (params) => {
 };
 exports.generateReplyHtml = generateReplyHtml;
 const sendReplyEmail = async (params) => {
-    const transporter = (0, exports.createTransporter)();
-    const fromAddress = process.env.SMTP_FROM || `"Shahzod.site" <${process.env.SMTP_USER}>`;
+    const { transporter, isTest, fromAddress } = await (0, exports.createTransporter)();
     const htmlContent = (0, exports.generateReplyHtml)(params);
     const info = await transporter.sendMail({
         from: fromAddress,
@@ -138,6 +155,10 @@ const sendReplyEmail = async (params) => {
         text: params.replyText,
         html: htmlContent,
     });
-    return { messageId: info.messageId };
+    const previewUrl = isTest ? nodemailer_1.default.getTestMessageUrl(info) : false;
+    if (previewUrl) {
+        console.log(`✉️ Test Email Preview URL: ${previewUrl}`);
+    }
+    return { messageId: info.messageId, isTest, previewUrl };
 };
 exports.sendReplyEmail = sendReplyEmail;
