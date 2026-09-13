@@ -6,26 +6,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendReplyEmail = exports.generateReplyHtml = exports.createTransporter = exports.isEmailConfigured = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const dns_1 = __importDefault(require("dns"));
+const resend_1 = require("resend");
 // Force IPv4 resolution to prevent ENETUNREACH on Render/Docker cloud containers
 try {
     dns_1.default.setDefaultResultOrder('ipv4first');
 }
 catch { }
 const isEmailConfigured = () => {
-    return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+    return Boolean(process.env.RESEND_API_KEY || (process.env.SMTP_USER && process.env.SMTP_PASS));
 };
 exports.isEmailConfigured = isEmailConfigured;
 const createTransporter = async () => {
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-    const port = parseInt(process.env.SMTP_PORT || '587', 10);
+    const port = parseInt(process.env.SMTP_PORT || '465', 10);
     const user = process.env.SMTP_USER;
     const pass = process.env.SMTP_PASS;
     if (user && pass && pass.trim().length > 0) {
+        const isSecure = port === 465;
         return {
             transporter: nodemailer_1.default.createTransport({
                 host,
                 port,
-                secure: port === 465,
+                secure: isSecure,
                 auth: {
                     user,
                     pass,
@@ -150,8 +152,25 @@ const generateReplyHtml = (params) => {
 };
 exports.generateReplyHtml = generateReplyHtml;
 const sendReplyEmail = async (params) => {
-    const { transporter, isTest, fromAddress } = await (0, exports.createTransporter)();
     const htmlContent = (0, exports.generateReplyHtml)(params);
+    // 1. Resend HTTP API (Port 443 - NEVER blocked by cloud firewalls or Render free tier)
+    if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim().length > 0) {
+        const resend = new resend_1.Resend(process.env.RESEND_API_KEY.trim());
+        const fromAddress = process.env.RESEND_FROM || process.env.SMTP_FROM || 'Shahzod.site <onboarding@resend.dev>';
+        const { data, error } = await resend.emails.send({
+            from: fromAddress,
+            to: params.toEmail,
+            subject: params.subject,
+            text: params.replyText,
+            html: htmlContent,
+        });
+        if (error) {
+            throw new Error(error.message || 'Resend xizmati orqali xat yuborishda xatolik yuz berdi');
+        }
+        return { messageId: data?.id || 'resend-sent', isTest: false };
+    }
+    // 2. Nodemailer SMTP
+    const { transporter, isTest, fromAddress } = await (0, exports.createTransporter)();
     const info = await transporter.sendMail({
         from: fromAddress,
         to: params.toEmail,

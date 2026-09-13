@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import dns from 'dns';
+import { Resend } from 'resend';
 
 // Force IPv4 resolution to prevent ENETUNREACH on Render/Docker cloud containers
 try {
@@ -16,21 +17,22 @@ export interface SendReplyParams {
 }
 
 export const isEmailConfigured = (): boolean => {
-  return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
+  return Boolean(process.env.RESEND_API_KEY || (process.env.SMTP_USER && process.env.SMTP_PASS));
 };
 
 export const createTransporter = async () => {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
+  const port = parseInt(process.env.SMTP_PORT || '465', 10);
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
   if (user && pass && pass.trim().length > 0) {
+    const isSecure = port === 465;
     return {
       transporter: nodemailer.createTransport({
         host,
         port,
-        secure: port === 465,
+        secure: isSecure,
         auth: {
           user,
           pass,
@@ -162,8 +164,31 @@ export const generateReplyHtml = (params: SendReplyParams): string => {
 export const sendReplyEmail = async (
   params: SendReplyParams
 ): Promise<{ messageId: string; isTest: boolean; previewUrl?: string | false }> => {
-  const { transporter, isTest, fromAddress } = await createTransporter();
   const htmlContent = generateReplyHtml(params);
+
+  // 1. Resend HTTP API (Port 443 - NEVER blocked by cloud firewalls or Render free tier)
+  if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim().length > 0) {
+    const resend = new Resend(process.env.RESEND_API_KEY.trim());
+    const fromAddress =
+      process.env.RESEND_FROM || process.env.SMTP_FROM || 'Shahzod.site <onboarding@resend.dev>';
+
+    const { data, error } = await resend.emails.send({
+      from: fromAddress,
+      to: params.toEmail,
+      subject: params.subject,
+      text: params.replyText,
+      html: htmlContent,
+    });
+
+    if (error) {
+      throw new Error(error.message || 'Resend xizmati orqali xat yuborishda xatolik yuz berdi');
+    }
+
+    return { messageId: data?.id || 'resend-sent', isTest: false };
+  }
+
+  // 2. Nodemailer SMTP
+  const { transporter, isTest, fromAddress } = await createTransporter();
 
   const info = await transporter.sendMail({
     from: fromAddress,
