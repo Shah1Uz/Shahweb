@@ -1,4 +1,10 @@
 import nodemailer from 'nodemailer';
+import dns from 'dns';
+
+// Force IPv4 resolution to prevent ENETUNREACH on Render/Docker cloud containers
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch {}
 
 export interface SendReplyParams {
   toEmail: string;
@@ -29,9 +35,11 @@ export const createTransporter = async () => {
           user,
           pass,
         },
-        connectionTimeout: 8000,
-        greetingTimeout: 8000,
-        socketTimeout: 10000,
+        // Force IPv4 to prevent ENETUNREACH on Render
+        ...({ family: 4 } as any),
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
       }),
       isTest: false,
       fromAddress: process.env.SMTP_FROM || `"Shahzod.site" <${user}>`,

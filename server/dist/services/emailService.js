@@ -5,6 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendReplyEmail = exports.generateReplyHtml = exports.createTransporter = exports.isEmailConfigured = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const dns_1 = __importDefault(require("dns"));
+// Force IPv4 resolution to prevent ENETUNREACH on Render/Docker cloud containers
+try {
+    dns_1.default.setDefaultResultOrder('ipv4first');
+}
+catch { }
 const isEmailConfigured = () => {
     return Boolean(process.env.SMTP_USER && process.env.SMTP_PASS);
 };
@@ -24,9 +30,11 @@ const createTransporter = async () => {
                     user,
                     pass,
                 },
-                connectionTimeout: 8000,
-                greetingTimeout: 8000,
-                socketTimeout: 10000,
+                // Force IPv4 to prevent ENETUNREACH on Render
+                ...{ family: 4 },
+                connectionTimeout: 10000,
+                greetingTimeout: 10000,
+                socketTimeout: 15000,
             }),
             isTest: false,
             fromAddress: process.env.SMTP_FROM || `"Shahzod.site" <${user}>`,

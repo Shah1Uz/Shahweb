@@ -1,4 +1,11 @@
 import express from 'express';
+import dns from 'dns';
+
+// Ensure cloud hosting (Render/AWS/Docker) resolves IPv4 first to avoid ENETUNREACH
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch {}
+
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
